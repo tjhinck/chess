@@ -1,6 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class MovesCalc {
 
@@ -27,13 +29,14 @@ public class MovesCalc {
             }
             case BISHOP -> {
                 BishopMovesCalc bishopMovesCalc = new BishopMovesCalc(board, position);
-                return bishopMovesCalc.calculateMoves();
+                return bishopMovesCalc.calculateBishopMoves();
             }
             case KNIGHT -> {
                 throw new RuntimeException("Knight Not implemented");
             }
             case ROOK -> {
-                throw new RuntimeException("Rook Not implemented");
+                RookMovesCalc rookMovesCalc = new RookMovesCalc(board, position);
+                return rookMovesCalc.calculateRookMoves();
             }
             case PAWN -> {
                 throw new RuntimeException("Pawn Not implemented");
@@ -41,5 +44,40 @@ public class MovesCalc {
         }
         throw new RuntimeException("No matching piece type");
 
+    }
+
+    /**
+     * Check for all valid moves in a straight line (horizontal, veritcal, diagonal)
+     *
+     * @param legalDirections 2D array showing where to check for moves
+     * @return list of valid moves
+     */
+    public Collection<ChessMove> straightLineMoves(int[][] legalDirections){
+        List<ChessMove> moves = new ArrayList<>();
+        // check legal directions until reaching end of board or piece
+        for (int[] direction : legalDirections){
+            int newRow = position.getRow() + direction[0];
+            int newCol = position.getColumn() + direction[1];
+
+            while (ChessPosition.isValid(newRow, newCol)){
+                ChessPiece occupant = board.getPiece(newRow, newCol);
+                // empty square
+                if (occupant == null){
+                    moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
+                } else{
+                    // piece occupying square
+                    if (occupant.getTeamColor() != piece.getTeamColor()){
+                        // capture allowed
+                        moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
+                    }
+                    // block further moves in this direction
+                    break;
+                }
+                // continue in current direction
+                newRow += direction[0];
+                newCol += direction[1];
+            }
+        }
+        return moves;
     }
 }
