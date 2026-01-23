@@ -37,6 +37,11 @@ public class ChessBoard {
         return squares[position.getRow()-1][position.getColumn()-1];
     }
 
+    // overload for finding a piece without creating a ChessPosition object
+    public ChessPiece getPiece (int row, int col){
+        return squares[row-1][col-1];
+    }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)

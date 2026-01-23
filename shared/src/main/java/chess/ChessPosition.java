@@ -14,8 +14,12 @@ public class ChessPosition {
     private final int col;
 
     public ChessPosition(int row, int col) {
-        this.row = row;
-        this.col = col;
+        if (isValid(row, col)) {
+            this.row = row;
+            this.col = col;
+        } else{
+            throw new RuntimeException("Invalid Position");
+        }
     }
 
     /**
@@ -39,11 +43,8 @@ public class ChessPosition {
      * @return true if the position is a valid space on the board
      *          false if not
      */
-    public boolean isValid(){
-        if ((row > 0 && row < 9 ) && (col > 0 && col < 9)){
-            return true;
-        }
-        return false;
+    public static boolean isValid(int row, int col){
+        return (row > 0 && row < 9) && (col > 0 && col < 9);
     }
 
     @Override

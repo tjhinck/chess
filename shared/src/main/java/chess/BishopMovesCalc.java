@@ -5,42 +5,45 @@ import java.util.Collection;
 import java.util.List;
 
 public class BishopMovesCalc extends MovesCalc {
+    int [][] legalDirections = {
+            {1,1},  // up right
+            {1,-1}, // up left
+            {-1,1}, // down right
+            {-1,-1} // down left
+    };
+
     public BishopMovesCalc(ChessBoard board, ChessPosition position) {
         super(board, position);
+
     }
 
     @Override
     public Collection<ChessMove> calculateMoves(){
         List<ChessMove> moves = new ArrayList<>();
-        // Check each diagonal and add valid moves to moves list
-        // Up and right
-        ChessPosition positionToCheck = new ChessPosition(position.getRow()+1, position.getColumn()+1);
-        while (positionToCheck.isValid()){
-            moves.add(new ChessMove(position, positionToCheck, null));
-            positionToCheck = new ChessPosition(positionToCheck.getRow()+1, positionToCheck.getColumn()+1);
-        }
-        // Down and right
-        positionToCheck = new ChessPosition(position.getRow()-1, position.getColumn()+1);
-        while (positionToCheck.isValid()){
-            moves.add(new ChessMove(position, positionToCheck, null));
-            positionToCheck = new ChessPosition(positionToCheck.getRow()-1, positionToCheck.getColumn()+1);
-        }
-        // Up and left
-        positionToCheck = new ChessPosition(position.getRow()+1, position.getColumn()-1);
-        while (positionToCheck.isValid()){
-            moves.add(new ChessMove(position, positionToCheck, null));
-            positionToCheck = new ChessPosition(positionToCheck.getRow()+1, positionToCheck.getColumn()-1);
-        }
-        // Down and left
-        positionToCheck = new ChessPosition(position.getRow()-1, position.getColumn()-1);
-        while (positionToCheck.isValid()){
-            moves.add(new ChessMove(position, positionToCheck, null));
-            positionToCheck = new ChessPosition(positionToCheck.getRow()-1, positionToCheck.getColumn()-1);
-        }
+        // check legal directions until reaching end of board or piece
+        for (int[] direction : legalDirections){
+            int newRow = position.getRow() + direction[0];
+            int newCol = position.getColumn() + direction[1];
 
+            while (ChessPosition.isValid(newRow, newCol)){
+                ChessPiece occupant = board.getPiece(newRow, newCol);
+                // empty square
+                if (occupant == null){
+                    moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
+                } else{
+                    // piece occupying square
+                    if (occupant.getTeamColor() != piece.getTeamColor()){
+                        // capture allowed
+                        moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
+                    }
+                    // block further moves in this direction
+                    break;
+                }
+                // continue in current direction
+                newRow += direction[0];
+                newCol += direction[1];
+            }
+        }
         return moves;
-
-//        System.out.println("Finding bishop moves");
-//        return List.of(new ChessMove(new ChessPosition(5,4), new ChessPosition(6,7), null));
     }
 }

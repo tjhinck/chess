@@ -1,20 +1,21 @@
 package chess;
 
 import java.util.Collection;
-import java.util.List;
 
 public class MovesCalc {
 
     protected final ChessBoard board;
     protected final ChessPosition position;
+    protected final ChessPiece piece;
 
     public MovesCalc(ChessBoard board, ChessPosition position) {
         this.board = board;
         this.position = position;
+        this.piece = board.getPiece(position);
+
     }
 
     public Collection<ChessMove> calculateMoves() {
-        ChessPiece piece = board.getPiece(position);
         ChessPiece.PieceType pieceType = piece.getPieceType();
 
         switch (pieceType) {
@@ -39,8 +40,6 @@ public class MovesCalc {
             }
         }
         throw new RuntimeException("No matching piece type");
+
     }
-
-
-
 }
