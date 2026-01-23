@@ -41,7 +41,8 @@ public class MovesCalc {
                 return rookMovesCalc.calculateRookMoves();
             }
             case PAWN -> {
-                throw new RuntimeException("Pawn Not implemented");
+                PawnMovesCalc pawnMovesCalc = new PawnMovesCalc(board, position);
+                return pawnMovesCalc.calculatePawnMoves();
             }
         }
         throw new RuntimeException("No matching piece type");
