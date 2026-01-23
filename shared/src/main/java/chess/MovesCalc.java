@@ -34,7 +34,8 @@ public class MovesCalc {
                 return bishopMovesCalc.calculateBishopMoves();
             }
             case KNIGHT -> {
-                throw new RuntimeException("Knight Not implemented");
+                KnightMovesCalc knightMovesCalc = new KnightMovesCalc(board, position);
+                return knightMovesCalc.calculateKingMoves();
             }
             case ROOK -> {
                 RookMovesCalc rookMovesCalc = new RookMovesCalc(board, position);
