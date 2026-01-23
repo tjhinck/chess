@@ -25,7 +25,8 @@ public class MovesCalc {
                 throw new RuntimeException("King not implemented");
             }
             case QUEEN -> {
-                throw new RuntimeException("Queen Not implemented");
+                QueenMovesCalc queenMovesCalc = new QueenMovesCalc(board, position);
+                return queenMovesCalc.calculateQueenMoves();
             }
             case BISHOP -> {
                 BishopMovesCalc bishopMovesCalc = new BishopMovesCalc(board, position);
