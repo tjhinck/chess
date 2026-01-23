@@ -22,7 +22,8 @@ public class MovesCalc {
 
         switch (pieceType) {
             case KING -> {
-                throw new RuntimeException("King not implemented");
+                KingMovesCalc kingMovesCalc = new KingMovesCalc(board,position);
+                return kingMovesCalc.calculateKingMoves();
             }
             case QUEEN -> {
                 QueenMovesCalc queenMovesCalc = new QueenMovesCalc(board, position);
