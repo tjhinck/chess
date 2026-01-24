@@ -29,15 +29,9 @@ public class KingMovesCalc extends MovesCalc{
             int newCol = position.getColumn() + direction[1];
             if (ChessPosition.isValid(newRow, newCol)) {
                 ChessPiece occupant = board.getPiece(newRow, newCol);
-                // empty square
-                if (occupant == null) {
+                // valid if not occupied or occupied by opposite color
+                if (occupant == null || occupant.getTeamColor() != piece.getTeamColor()) {
                     moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
-                } else {
-                    // piece occupying square
-                    if (occupant.getTeamColor() != piece.getTeamColor()) {
-                        // capture allowed
-                        moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
-                    }
                 }
             }
         }

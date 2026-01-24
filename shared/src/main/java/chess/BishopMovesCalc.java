@@ -12,7 +12,6 @@ public class BishopMovesCalc extends MovesCalc {
 
     public BishopMovesCalc(ChessBoard board, ChessPosition position) {
         super(board, position);
-
     }
 
     public Collection<ChessMove> calculateBishopMoves(){

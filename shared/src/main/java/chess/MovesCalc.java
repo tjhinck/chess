@@ -51,7 +51,7 @@ public class MovesCalc {
     }
 
     /**
-     * Check for all valid moves in a straight line (horizontal, veritcal, diagonal)
+     * Check for all valid moves in a straight line (horizontal, vertical, diagonal)
      *
      * @param legalDirections 2D array showing where to check for moves
      * @return list of valid moves

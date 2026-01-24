@@ -70,7 +70,6 @@ public class PawnMovesCalc extends MovesCalc{
             }
         }
 
-
         return moves;
     }
 }

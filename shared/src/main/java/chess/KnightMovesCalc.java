@@ -15,6 +15,7 @@ public class KnightMovesCalc extends MovesCalc {
     public KnightMovesCalc(ChessBoard board, ChessPosition position) {
         super(board, position);
     }
+
     public Collection<ChessMove> calculateKingMoves() {
         List<ChessMove> moves = new ArrayList<>();
         // check if each knight jump is allowed

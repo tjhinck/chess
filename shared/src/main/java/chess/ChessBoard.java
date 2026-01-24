@@ -12,17 +12,6 @@ import java.util.Objects;
 public class ChessBoard {
     ChessPiece[][] squares = new ChessPiece[8][8];
 
-    ChessPiece.PieceType[] backRank = {
-            ChessPiece.PieceType.ROOK,
-            ChessPiece.PieceType.KNIGHT,
-            ChessPiece.PieceType.BISHOP,
-            ChessPiece.PieceType.QUEEN,
-            ChessPiece.PieceType.KING,
-            ChessPiece.PieceType.BISHOP,
-            ChessPiece.PieceType.KNIGHT,
-            ChessPiece.PieceType.ROOK
-    };
-
     public ChessBoard() {
         
     }
@@ -58,7 +47,17 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        // add white pieces back rank
+        ChessPiece.PieceType[] backRank = {
+                ChessPiece.PieceType.ROOK,
+                ChessPiece.PieceType.KNIGHT,
+                ChessPiece.PieceType.BISHOP,
+                ChessPiece.PieceType.QUEEN,
+                ChessPiece.PieceType.KING,
+                ChessPiece.PieceType.BISHOP,
+                ChessPiece.PieceType.KNIGHT,
+                ChessPiece.PieceType.ROOK
+        };
+        // loop through columns and add pieces
         for (int col = 0; col < 8; col++){
             // add white pieces back rank
             squares[0][col] = new ChessPiece(ChessGame.TeamColor.WHITE, backRank[col]);
@@ -69,18 +68,6 @@ public class ChessBoard {
             // add black back row
             squares[7][col] = new ChessPiece(ChessGame.TeamColor.BLACK, backRank[col]);
         }
-
-
-//        squares = new ChessPiece[][]{
-//                {null, null, null, null, null, null, null, null},
-//                {null, null, null, null, null, null, null, null},
-//                {null, null, null, null, null, null, null, null},
-//                {null, null, null, null, null, null, null, null},
-//                {null, null, null, null, null, null, null, null},
-//                {null, null, null, null, null, null, null, null},
-//                {null, null, null, null, null, null, null, null},
-//                {null, null, null, null, null, null, null, new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK)}
-//        };
     }
 
     @Override

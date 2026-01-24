@@ -18,7 +18,7 @@ public class ChessPosition {
             this.row = row;
             this.col = col;
         } else{
-            throw new RuntimeException("Invalid Position");
+            throw new RuntimeException("Invalid ChessPosition");
         }
     }
 
