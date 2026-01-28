@@ -1,11 +1,9 @@
 package chess;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class KingMovesCalc extends MovesCalc{
-    int [][] legalDirections = {
+    int [][] moveDirections = {
             {1,0},  // up
             {-1,0}, // down
             {0,1},  // right
@@ -22,20 +20,7 @@ public class KingMovesCalc extends MovesCalc{
     }
 
     public Collection<ChessMove> calculateKingMoves() {
-        List<ChessMove> moves = new ArrayList<>();
-        // check each direction once
-        for (int[] direction : legalDirections) {
-            int newRow = position.getRow() + direction[0];
-            int newCol = position.getColumn() + direction[1];
-            if (ChessPosition.isValid(newRow, newCol)) {
-                ChessPiece occupant = board.getPiece(newRow, newCol);
-                // valid if not occupied or occupied by opposite color
-                if (occupant == null || occupant.getTeamColor() != piece.getTeamColor()) {
-                    moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
-                }
-            }
-        }
-        return moves;
+        return singleSquareMoves(moveDirections);
     }
 }
 

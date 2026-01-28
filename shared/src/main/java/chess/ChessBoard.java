@@ -59,13 +59,13 @@ public class ChessBoard {
         };
         // loop through columns and add pieces
         for (int col = 0; col < 8; col++){
-            // add white pieces back rank
+            // add white pieces to back rank
             squares[0][col] = new ChessPiece(ChessGame.TeamColor.WHITE, backRank[col]);
             // add white pawns
             squares[1][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
             // add black pawns
             squares[6][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
-            // add black back row
+            // add black pieces to back rank
             squares[7][col] = new ChessPiece(ChessGame.TeamColor.BLACK, backRank[col]);
         }
     }

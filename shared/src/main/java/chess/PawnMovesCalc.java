@@ -2,7 +2,6 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class PawnMovesCalc extends MovesCalc{
     ChessPiece.PieceType[] promotionTypes = {
@@ -17,55 +16,58 @@ public class PawnMovesCalc extends MovesCalc{
     }
 
     public Collection<ChessMove> calculatePawnMoves(){
-        List<ChessMove> moves = new ArrayList<>();
-        // set values for white vs black pawn
-        ChessGame.TeamColor pawnColor = piece.getTeamColor();
+        Collection<ChessMove> moves = new ArrayList<>();
         int pawnDirection;
-        int startRow;
+        int firstMoveRow;
         int promotionRow;
+        // set values specific to pawn color
+        ChessGame.TeamColor pawnColor = piece.getTeamColor();
         if (pawnColor == ChessGame.TeamColor.WHITE){
             pawnDirection = 1;
-            startRow = 2;
+            firstMoveRow = 3;
             promotionRow = 8;
         } else {
           pawnDirection = -1;
-          startRow = 7;
+          firstMoveRow = 6;
           promotionRow = 1;
         }
-        // check diagonal capture
         int newRow = position.getRow() + pawnDirection;
         int newCol = position.getColumn();
+        // check diagonal capture
         int[] captureColumns = {newCol + 1, newCol - 1};
-        for (int captureColumn : captureColumns){
-            if (ChessPosition.isValid(newRow, captureColumn)){
-                ChessPiece occupant = board.getPiece(newRow, captureColumn);
+        for (int captureCol : captureColumns){
+            if (ChessPosition.isValid(newRow, captureCol)){
+                ChessPiece occupant = board.getPiece(newRow, captureCol);
                 if (occupant != null && occupant.getTeamColor() != pawnColor){
-                    // check for promotion
                     if (newRow == promotionRow){
+                        // add move for each promotion type
                         for (ChessPiece.PieceType pieceType : promotionTypes){
-                            moves.add(new ChessMove(position, new ChessPosition(newRow, captureColumn), pieceType));
+                            moves.add(new ChessMove(position, new ChessPosition(newRow, captureCol), pieceType));
                         }
                     } else {
-                        moves.add(new ChessMove(position, new ChessPosition(newRow, captureColumn), null));
+                        moves.add(new ChessMove(position, new ChessPosition(newRow, captureCol), null));
                     }
                 }
             }
         }
-        // check moving one square in pawnDirection
-        if (ChessPosition.isValid(newRow, newCol) && board.getPiece(newRow, newCol) == null){
-            // check for promotion
-            if (newRow == promotionRow){
-                for (ChessPiece.PieceType pieceType : promotionTypes){
-                    moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), pieceType));
-                }
-            } else{
-                moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
-            }
-            // moving two squares for first turn
-            if (position.getRow() == startRow){
-                newRow = position.getRow() + 2 * pawnDirection;
-                if (board.getPiece(newRow, newCol) == null) {
+        // check moving forward one square
+        if (ChessPosition.isValid(newRow, newCol)){
+            ChessPiece occupant = board.getPiece(newRow, newCol);
+            if (occupant == null){
+                if (newRow == promotionRow){
+                    // add move for each promotion
+                    for (ChessPiece.PieceType pieceType : promotionTypes){
+                        moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), pieceType));                        }
+                } else {
                     moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
+                }
+                // check for first move double squares
+                if (newRow == firstMoveRow){
+                    newRow += pawnDirection;
+                    occupant = board.getPiece(newRow, newCol);
+                    if (occupant == null){
+                        moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
+                    }
                 }
             }
         }

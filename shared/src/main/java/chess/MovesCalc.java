@@ -2,7 +2,6 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class MovesCalc {
 
@@ -14,7 +13,6 @@ public class MovesCalc {
         this.board = board;
         this.position = position;
         this.piece = board.getPiece(position);
-
     }
 
     public Collection<ChessMove> calculateMoves() {
@@ -45,33 +43,33 @@ public class MovesCalc {
                 PawnMovesCalc pawnMovesCalc = new PawnMovesCalc(board, position);
                 return pawnMovesCalc.calculatePawnMoves();
             }
+            default -> throw new RuntimeException("Invalid Piece Type");
         }
-        throw new RuntimeException("No matching piece type");
-
     }
 
     /**
      * Check for all valid moves in a straight line (horizontal, vertical, diagonal)
      *
-     * @param legalDirections 2D array showing where to check for moves
+     * @param moveDirections array of arrays showing where to check for moves
      * @return list of valid moves
      */
-    public Collection<ChessMove> straightLineMoves(int[][] legalDirections){
-        List<ChessMove> moves = new ArrayList<>();
-        // check legal directions until reaching end of board or piece
-        for (int[] direction : legalDirections){
-            int newRow = position.getRow() + direction[0];
-            int newCol = position.getColumn() + direction[1];
-
+    public Collection<ChessMove> straightLineMoves(int[][] moveDirections){
+        Collection<ChessMove> moves = new ArrayList<>();
+        int currentRow = position.getRow();
+        int currentCol = position.getColumn();
+        // check legal directions until reaching a piece or end of board
+        for (int[] direction : moveDirections){
+            int newRow = currentRow + direction[0];
+            int newCol =  currentCol + direction[1];
+            // continue until blocked
             while (ChessPosition.isValid(newRow, newCol)){
                 ChessPiece occupant = board.getPiece(newRow, newCol);
-                // empty square
                 if (occupant == null){
+                    // empty square
                     moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
                 } else{
-                    // piece occupying square
                     if (occupant.getTeamColor() != piece.getTeamColor()){
-                        // capture allowed
+                        // allow capture
                         moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
                     }
                     // block further moves in this direction
@@ -80,6 +78,31 @@ public class MovesCalc {
                 // continue in current direction
                 newRow += direction[0];
                 newCol += direction[1];
+            }
+        }
+        return moves;
+    }
+
+    /**
+     * Check one valid move for each move direction
+     * Works for any single move
+     * @param moveDirections array of arrays showing where to check for moves
+     * @return list of valid moves
+     */
+    public Collection<ChessMove> singleSquareMoves(int[][] moveDirections){
+        Collection<ChessMove> moves = new ArrayList<>();
+        int currentRow = position.getRow();
+        int currentCol = position.getColumn();
+        // check each direction once
+        for (int[] direction : moveDirections){
+            int newRow = currentRow + direction[0];
+            int newCol = currentCol + direction[1];
+            if (ChessPosition.isValid(newRow, newCol)) {
+                ChessPiece occupant = board.getPiece(newRow, newCol);
+                // valid if not occupied or occupied by opposite color
+                if (occupant == null || occupant.getTeamColor() != piece.getTeamColor()) {
+                    moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
+                }
             }
         }
         return moves;
