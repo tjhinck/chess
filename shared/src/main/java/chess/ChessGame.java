@@ -60,7 +60,13 @@ public class ChessGame {
         Collection<ChessMove> validMoves = new ArrayList<>();
         // remove illegal moves
         for (ChessMove move : initialMoves) {
-
+            try{
+                ChessBoard boardCopy = board.clone();
+                boardCopy.movePiece(move);
+                validMoves.add(move);
+            } catch (InvalidMoveException e){
+                continue;
+            }
         }
         return validMoves;
     }
@@ -82,8 +88,9 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return board.isInCheck(teamColor);
     }
+
 
     /**
      * Determines if the given team is in checkmate

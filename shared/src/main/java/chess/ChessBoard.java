@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -11,6 +12,8 @@ import java.util.Objects;
  */
 public class ChessBoard implements Cloneable{
     ChessPiece[][] squares = new ChessPiece[8][8];
+    ChessPosition whiteKingPosition;
+    ChessPosition blackKingPosition;
 
     public ChessBoard() {
         
@@ -42,18 +45,23 @@ public class ChessBoard implements Cloneable{
         return squares[row-1][col-1];
     }
 
-    public void movePiece(ChessMove move){
+    public void movePiece(ChessMove move) throws InvalidMoveException{
         int[] start = {
-                move.getStartPosition().getRow()-1,
-                move.getStartPosition().getColumn()-1
+                move.startPosition().getRow()-1,
+                move.startPosition().getColumn()-1
         };
         int[] end = {
-                move.getEndPosition().getRow()-1,
-                move.getEndPosition().getColumn()-1
+                move.endPosition().getRow()-1,
+                move.endPosition().getColumn()-1
             };
+        ChessGame.TeamColor movingTeam = getPiece(move.startPosition()).getTeamColor();
+        // todo add promotion
+        // todo update king position
         squares[end[0]][end[1]] = squares[start[0]][start[1]];
         squares[start[0]][start[1]] = null;
-        // todo add promotion
+        if (isInCheck(movingTeam)){
+            throw new InvalidMoveException();
+        }
     }
 
     /**
@@ -82,6 +90,43 @@ public class ChessBoard implements Cloneable{
             // add black pieces to back rank
             squares[7][col] = new ChessPiece(ChessGame.TeamColor.BLACK, backRank[col]);
         }
+        whiteKingPosition = new ChessPosition(1,5);
+        blackKingPosition = new ChessPosition(8, 5);
+    }
+
+//    ChessPosition findKing(ChessGame.TeamColor kingColor){
+//        for (int row = 0; row < 8; row++){
+//            for (int col = 0; col < 8; col++){
+//                ChessPiece piece = squares[row][col];
+//                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING
+//                        && piece.getTeamColor() == kingColor){
+//                    return new ChessPosition(row, col);
+//                }
+//            }
+//        }
+//        return null;
+//    }
+
+    /**
+     * find if a certain colored King is in check
+     */
+    public boolean isInCheck(ChessGame.TeamColor kingColor){
+        ChessPosition kingPosition = kingColor == ChessGame.TeamColor.WHITE ? whiteKingPosition : blackKingPosition;
+        // check all moves of the opposite color
+        for (int row = 0; row < 8; row++){
+            for (int col = 0; col < 8; col++){
+                ChessPiece piece = squares[row][col];
+                if (piece != null && piece.getTeamColor() != kingColor){
+                    Collection<ChessMove> moves = piece.pieceMoves(this, new ChessPosition(row+1, col+1));
+                    for (ChessMove move : moves){
+                        if (move.endPosition() == kingPosition){
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -89,10 +134,13 @@ public class ChessBoard implements Cloneable{
         try {
             ChessBoard clone = (ChessBoard) super.clone();
             for (int row = 0; row < 8; row++){
-                for (int col = 0; col < 8; col++){
-                    clone.squares[row][col] = this.squares[row][col].clone();
-                }
+                clone.squares[row] = Arrays.copyOf(squares[row], 8);
             }
+//            for (int row = 0; row < 8; row++){
+//                for (int col = 0; col < 8; col++){
+//                    clone.squares[row][col] = this.squares[row][col].clone();
+//                }
+//            }
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
@@ -102,9 +150,10 @@ public class ChessBoard implements Cloneable{
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (ChessPiece[] row : squares){
+        for (int row = 8; row > 0; row--){ // go backwards to get right viewing order
             sb.append("|");
-            for (ChessPiece piece : row){
+            for (int col = 1; col < 9; col++){
+                ChessPiece piece = getPiece(row, col);
                 if (piece == null){
                     sb.append(" ");
                 } else{

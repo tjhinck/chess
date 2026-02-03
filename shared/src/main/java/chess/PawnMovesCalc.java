@@ -57,7 +57,8 @@ public class PawnMovesCalc extends MovesCalc{
                 if (newRow == promotionRow){
                     // add move for each promotion
                     for (ChessPiece.PieceType pieceType : promotionTypes){
-                        moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), pieceType));                        }
+                        moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), pieceType));
+                    }
                 } else {
                     moves.add(new ChessMove(position, new ChessPosition(newRow, newCol), null));
                 }
