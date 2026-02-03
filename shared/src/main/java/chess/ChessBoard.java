@@ -42,6 +42,20 @@ public class ChessBoard {
         return squares[row-1][col-1];
     }
 
+    public void movePiece(ChessMove move){
+        int[] start = {
+                move.getStartPosition().getRow()-1,
+                move.getStartPosition().getColumn()-1
+        };
+        int[] end = {
+                move.getEndPosition().getRow()-1,
+                move.getEndPosition().getColumn()-1
+            };
+        squares[end[0]][end[1]] = squares[start[0]][start[1]];
+        squares[start[0]][start[1]] = null;
+        // todo add promotion
+    }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
@@ -68,6 +82,24 @@ public class ChessBoard {
             // add black pieces to back rank
             squares[7][col] = new ChessPiece(ChessGame.TeamColor.BLACK, backRank[col]);
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (ChessPiece[] row : squares){
+            sb.append("|");
+            for (ChessPiece piece : row){
+                if (piece == null){
+                    sb.append(" ");
+                } else{
+                    sb.append(piece);
+                }
+                sb.append("|");
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
     @Override
