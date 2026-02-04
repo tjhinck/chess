@@ -54,11 +54,20 @@ public class ChessBoard implements Cloneable{
                 move.endPosition().getRow()-1,
                 move.endPosition().getColumn()-1
             };
-        ChessGame.TeamColor movingTeam = getPiece(move.startPosition()).getTeamColor();
-        // todo add promotion
-        // todo update king position
+        ChessPiece piece = getPiece(move.startPosition());
+        ChessPiece.PieceType pieceType = piece.getPieceType();
+        ChessGame.TeamColor movingTeam = piece.getTeamColor();
+
         squares[end[0]][end[1]] = squares[start[0]][start[1]];
         squares[start[0]][start[1]] = null;
+        if (pieceType == ChessPiece.PieceType.KING){
+            if (movingTeam == ChessGame.TeamColor.WHITE){
+                whiteKingPosition = move.endPosition();
+            } else {
+                blackKingPosition = move.endPosition();
+            }
+        }
+        // todo add pawn promotion
         if (isInCheck(movingTeam)){
             throw new InvalidMoveException();
         }
@@ -94,21 +103,33 @@ public class ChessBoard implements Cloneable{
         blackKingPosition = new ChessPosition(8, 5);
     }
 
-//    ChessPosition findKing(ChessGame.TeamColor kingColor){
-//        for (int row = 0; row < 8; row++){
-//            for (int col = 0; col < 8; col++){
-//                ChessPiece piece = squares[row][col];
-//                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING
-//                        && piece.getTeamColor() == kingColor){
-//                    return new ChessPosition(row, col);
-//                }
-//            }
-//        }
-//        return null;
-//    }
+    public void setKingLocations() {
+        whiteKingPosition = findKing(ChessGame.TeamColor.WHITE);
+        blackKingPosition = findKing(ChessGame.TeamColor.BLACK);
+    }
 
     /**
-     * find if a certain colored King is in check
+     * Find king position to save for predetermined board
+     * @param kingColor
+     * @return position of that king
+     */
+    ChessPosition findKing(ChessGame.TeamColor kingColor){
+        for (int row = 0; row < 8; row++){
+            for (int col = 0; col < 8; col++){
+                ChessPiece piece = squares[row][col];
+                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING
+                        && piece.getTeamColor() == kingColor){
+                    return new ChessPosition(row+1, col+1);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param kingColor
+     * @return true if that king is in check
      */
     public boolean isInCheck(ChessGame.TeamColor kingColor){
         ChessPosition kingPosition = kingColor == ChessGame.TeamColor.WHITE ? whiteKingPosition : blackKingPosition;
@@ -119,7 +140,7 @@ public class ChessBoard implements Cloneable{
                 if (piece != null && piece.getTeamColor() != kingColor){
                     Collection<ChessMove> moves = piece.pieceMoves(this, new ChessPosition(row+1, col+1));
                     for (ChessMove move : moves){
-                        if (move.endPosition() == kingPosition){
+                        if (move.endPosition().equals(kingPosition)){
                             return true;
                         }
                     }
@@ -133,14 +154,10 @@ public class ChessBoard implements Cloneable{
     public ChessBoard clone() {
         try {
             ChessBoard clone = (ChessBoard) super.clone();
+            clone.squares = new ChessPiece[8][8];
             for (int row = 0; row < 8; row++){
                 clone.squares[row] = Arrays.copyOf(squares[row], 8);
             }
-//            for (int row = 0; row < 8; row++){
-//                for (int col = 0; col < 8; col++){
-//                    clone.squares[row][col] = this.squares[row][col].clone();
-//                }
-//            }
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);

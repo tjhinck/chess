@@ -7,7 +7,9 @@ public class ClientMain {
         var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
         System.out.println("♕ 240 Chess Client: " + piece);
         var board = new ChessBoard();
+        var copy = board.clone();
         board.resetBoard();
         System.out.println(board);
+        System.out.println(copy);
     }
 }

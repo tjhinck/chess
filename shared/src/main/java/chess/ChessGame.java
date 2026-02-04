@@ -120,6 +120,7 @@ public class ChessGame {
      */
     public void setBoard(ChessBoard newBoard) {
         board = newBoard;
+        board.setKingLocations();
     }
 
     /**
