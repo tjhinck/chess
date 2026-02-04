@@ -60,14 +60,18 @@ public class ChessBoard implements Cloneable{
 
         squares[end[0]][end[1]] = squares[start[0]][start[1]];
         squares[start[0]][start[1]] = null;
+        // check for special moves cases
         if (pieceType == ChessPiece.PieceType.KING){
             if (movingTeam == ChessGame.TeamColor.WHITE){
                 whiteKingPosition = move.endPosition();
             } else {
                 blackKingPosition = move.endPosition();
             }
+        } else if (pieceType == ChessPiece.PieceType.PAWN) {
+            if (move.promotionPiece() != null){
+                squares[end[0]][end[1]] = new ChessPiece(movingTeam, move.promotionPiece());
+            }
         }
-        // todo add pawn promotion
         if (isInCheck(movingTeam)){
             throw new InvalidMoveException();
         }
