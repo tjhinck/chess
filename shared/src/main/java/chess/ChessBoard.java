@@ -47,14 +47,14 @@ public class ChessBoard implements Cloneable{
 
     public void movePiece(ChessMove move) throws InvalidMoveException{
         int[] start = {
-                move.startPosition().getRow()-1,
-                move.startPosition().getColumn()-1
+                move.getStartPosition().getRow()-1,
+                move.getStartPosition().getColumn()-1
         };
         int[] end = {
-                move.endPosition().getRow()-1,
-                move.endPosition().getColumn()-1
+                move.getEndPosition().getRow()-1,
+                move.getEndPosition().getColumn()-1
             };
-        ChessPiece piece = getPiece(move.startPosition());
+        ChessPiece piece = getPiece(move.getStartPosition());
         ChessPiece.PieceType pieceType = piece.getPieceType();
         ChessGame.TeamColor movingTeam = piece.getTeamColor();
 
@@ -63,13 +63,13 @@ public class ChessBoard implements Cloneable{
         // check for special moves cases
         if (pieceType == ChessPiece.PieceType.KING){
             if (movingTeam == ChessGame.TeamColor.WHITE){
-                whiteKingPosition = move.endPosition();
+                whiteKingPosition = move.getEndPosition();
             } else {
-                blackKingPosition = move.endPosition();
+                blackKingPosition = move.getEndPosition();
             }
         } else if (pieceType == ChessPiece.PieceType.PAWN) {
-            if (move.promotionPiece() != null){
-                squares[end[0]][end[1]] = new ChessPiece(movingTeam, move.promotionPiece());
+            if (move.getPromotionPiece() != null){
+                squares[end[0]][end[1]] = new ChessPiece(movingTeam, move.getPromotionPiece());
             }
         }
         if (isInCheck(movingTeam)){
@@ -144,7 +144,7 @@ public class ChessBoard implements Cloneable{
                 if (piece != null && piece.getTeamColor() != kingColor){
                     Collection<ChessMove> moves = piece.pieceMoves(this, new ChessPosition(row+1, col+1));
                     for (ChessMove move : moves){
-                        if (move.endPosition().equals(kingPosition)){
+                        if (move.getEndPosition().equals(kingPosition)){
                             return true;
                         }
                     }

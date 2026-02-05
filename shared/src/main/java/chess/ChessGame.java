@@ -99,9 +99,9 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        ChessPiece targetPiece = board.getPiece(move.startPosition());
+        ChessPiece targetPiece = board.getPiece(move.getStartPosition());
         if (targetPiece != null && targetPiece.getTeamColor() == teamTurn){
-            Collection<ChessMove> validMoves = validMoves(move.startPosition());
+            Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
             if (validMoves.contains(move)){
                 board.movePiece(move);
                 teamTurn = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
