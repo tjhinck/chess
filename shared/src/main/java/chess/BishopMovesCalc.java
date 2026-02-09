@@ -2,7 +2,7 @@ package chess;
 
 import java.util.Collection;
 
-public class BishopMovesCalc extends MovesCalc {
+public final class BishopMovesCalc extends MovesCalc {
     int [][] legalDirections = {
             {1,1},  // up right
             {1,-1}, // up left

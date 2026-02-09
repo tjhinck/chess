@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class KnightMovesCalc extends MovesCalc {
+public final class KnightMovesCalc extends MovesCalc {
     int[][] legalJumps = {
         {-2, -1}, {-2,  1},
         {-1, -2}, {-1,  2},
