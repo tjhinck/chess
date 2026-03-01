@@ -46,7 +46,8 @@ public class Server {
     }
 
     private void register(Context context) throws DataAccessException, ResponseException {
-        RegisterRequest registerRequest = (RegisterRequest) deserializeRequest(context, RegisterRequest.class);
+        RegisterRequest registerRequest = gson.fromJson(context.body(), RegisterRequest.class);
+//        RegisterRequest registerRequest = (RegisterRequest) deserializeRequest(context, RegisterRequest.class);
         RegisterResponse registerResponse = registerService.register(registerRequest);
         context.status(200);
         context.result(gson.toJson(registerResponse));
