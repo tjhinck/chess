@@ -8,7 +8,8 @@ public class ResponseException extends Exception {
 
     public enum httpCode{
         badRequest(400),
-        unauthorized(401);
+        unauthorized(401),
+        usernameTaken(403);
 
         private final int code;
         httpCode(int code) { this.code = code; }

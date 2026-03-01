@@ -45,9 +45,9 @@ public class Server {
         registerService = new RegisterService(userDao);
     }
 
-    private void register(Context context) {
+    private void register(Context context) throws DataAccessException {
         RegisterRequest registerRequest = gson.fromJson(context.body(), RegisterRequest.class);
-        RegisterResponse registerResponse =
+        RegisterResponse registerResponse = registerService.register(registerRequest);
     }
 
     private void login(Context context) throws ResponseException, DataAccessException {
@@ -83,6 +83,14 @@ public class Server {
         context.result(gson.toJson(Map.of(
                 "message", exception.getMessage()
         )));
+    }
+
+    private <T> Object deserializeRequest(Context context, T requestType) throws ResponseException{
+        try{
+            return gson.fromJson(context.body(), requestType.getClass());
+        } catch (Exception e){
+            throw new ResponseException(ResponseException.httpCode.badRequest, "Error: bad request");
+        }
     }
 
 
