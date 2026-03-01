@@ -1,4 +1,51 @@
 package service;
 
+import Request.RegisterRequest;
+import Response.RegisterResponse;
+import Response.ResponseException;
+import dataaccess.DataAccessException;
+import dataaccess.MemoryUserDao;
+import dataaccess.UserDao;
+import model.UserData;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class RegisterServiceTests {
+
+    private RegisterService registerService;
+    private static UserDao userDao;
+    private UserData existingUser;
+    private RegisterRequest registerRequest;
+
+    @BeforeAll
+    public static void init(){
+        userDao = new MemoryUserDao();
+    }
+
+    @BeforeEach
+    public void setup() throws DataAccessException {
+        userDao.clearData();
+        registerService = new RegisterService(userDao);
+    }
+
+    @Test
+    public void validRegister() throws ResponseException, DataAccessException {
+        registerRequest = new RegisterRequest("myuser", "wordpass", "hello@mail.com");
+        RegisterResponse registerResponse = registerService.register(registerRequest);
+        assertEquals(registerRequest.username(), registerResponse.username());
+    }
+
+    @Test
+    public void userAlreadyExists() throws DataAccessException {
+        existingUser = new UserData("username", "secretpassword", "hey@yahoo.com");
+        userDao.addUser(existingUser);
+
+        registerRequest = new RegisterRequest("username", "bettersecret", "hey@yahoo.com");
+        assertThrows(ResponseException.class, () -> registerService.register(registerRequest));
+
+    }
 }

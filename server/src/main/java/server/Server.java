@@ -45,13 +45,16 @@ public class Server {
         registerService = new RegisterService(userDao);
     }
 
-    private void register(Context context) throws DataAccessException {
-        RegisterRequest registerRequest = gson.fromJson(context.body(), RegisterRequest.class);
+    private void register(Context context) throws DataAccessException, ResponseException {
+        RegisterRequest registerRequest = (RegisterRequest) deserializeRequest(context, RegisterRequest.class);
         RegisterResponse registerResponse = registerService.register(registerRequest);
+        context.status(200);
+        context.result(gson.toJson(registerResponse));
     }
 
     private void login(Context context) throws ResponseException, DataAccessException {
-        LoginRequest loginRequest = gson.fromJson(context.body(), LoginRequest.class);
+//        LoginRequest loginRequest = gson.fromJson(context.body(), LoginRequest.class);
+        LoginRequest loginRequest = (LoginRequest) deserializeRequest(context, LoginRequest.class);
         LoginResponse loginResponse = loginService.login(loginRequest);
         context.status(200);
         context.result(gson.toJson(loginResponse));
