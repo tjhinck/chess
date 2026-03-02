@@ -46,16 +46,16 @@ public class Server {
     }
 
     private void register(Context context) throws DataAccessException, ResponseException {
-        RegisterRequest registerRequest = gson.fromJson(context.body(), RegisterRequest.class);
-//        RegisterRequest registerRequest = (RegisterRequest) deserializeRequest(context, RegisterRequest.class);
+//        RegisterRequest registerRequest = gson.fromJson(context.body(), RegisterRequest.class);
+        RegisterRequest registerRequest = deserializeRequest(context.body(), RegisterRequest.class);
         RegisterResponse registerResponse = registerService.register(registerRequest);
         context.status(200);
         context.result(gson.toJson(registerResponse));
     }
 
     private void login(Context context) throws ResponseException, DataAccessException {
-//        LoginRequest loginRequest = gson.fromJson(context.body(), LoginRequest.class);
-        LoginRequest loginRequest = (LoginRequest) deserializeRequest(context, LoginRequest.class);
+    //        LoginRequest loginRequest = gson.fromJson(context.body(), LoginRequest.class);
+        LoginRequest loginRequest = deserializeRequest(context.body(), LoginRequest.class);
         LoginResponse loginResponse = loginService.login(loginRequest);
         context.status(200);
         context.result(gson.toJson(loginResponse));
@@ -89,9 +89,9 @@ public class Server {
         )));
     }
 
-    private <T> Object deserializeRequest(Context context, T requestType) throws ResponseException{
+    private <T> T deserializeRequest(String json, Class<T> requestType) throws ResponseException{
         try{
-            return gson.fromJson(context.body(), requestType.getClass());
+            return gson.fromJson(json, requestType);
         } catch (Exception e){
             throw new ResponseException(ResponseException.httpCode.badRequest, "Error: bad request");
         }
