@@ -3,9 +3,7 @@ package service;
 import Request.RegisterRequest;
 import Response.RegisterResponse;
 import Response.ResponseException;
-import dataaccess.DataAccessException;
-import dataaccess.MemoryUserDao;
-import dataaccess.UserDao;
+import dataaccess.*;
 import model.UserData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,18 +16,22 @@ public class RegisterServiceTests {
 
     private RegisterService registerService;
     private static UserDao userDao;
+    private static AuthDao authDao;
     private UserData existingUser;
     private RegisterRequest registerRequest;
 
     @BeforeAll
     public static void init(){
         userDao = new MemoryUserDao();
+        authDao = new MemoryAuthDao();
     }
 
     @BeforeEach
     public void setup() throws DataAccessException {
         userDao.clearData();
-        registerService = new RegisterService(userDao);
+        authDao.clearData();
+        registerService = new RegisterService(userDao, authDao);
+
     }
 
     @Test

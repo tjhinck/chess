@@ -3,6 +3,7 @@ package service;
 import Request.LoginRequest;
 import Response.LoginResponse;
 import Response.ResponseException;
+import dataaccess.AuthDao;
 import dataaccess.DataAccessException;
 import dataaccess.UserDao;
 import model.AuthData;
@@ -13,10 +14,12 @@ import java.util.UUID;
 
 
 public class LoginService {
-    private UserDao userDao;
+    private final UserDao userDao;
+    private final AuthDao authDao;
 
-    public LoginService(UserDao userDao) {
+    public LoginService(UserDao userDao, AuthDao authDao) {
         this.userDao = userDao;
+        this.authDao = authDao;
     }
 
     public LoginResponse login(LoginRequest request) throws DataAccessException, ResponseException {
@@ -24,7 +27,7 @@ public class LoginService {
         if (foundUser != null && Objects.equals(foundUser.password(), request.password())){
             String newAuthToken = UUID.randomUUID().toString();
             AuthData newAuthData = new AuthData(newAuthToken, request.username());
-            userDao.addAuthData(newAuthData);
+            authDao.addAuthData(newAuthData);
             return new LoginResponse(request.username(), newAuthToken);
         } else {
             throw new ResponseException(ResponseException.httpCode.unauthorized, "Error: unauthorized");

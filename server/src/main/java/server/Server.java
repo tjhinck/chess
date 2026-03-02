@@ -1,52 +1,66 @@
 package server;
 
+import Request.CreateGameRequest;
 import Request.RegisterRequest;
+import Response.CreateGameResponse;
 import Response.RegisterResponse;
 import Response.ResponseException;
-import dataaccess.DataAccessException;
-import dataaccess.MemoryUserDao;
-import dataaccess.UserDao;
+import dataaccess.*;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import io.javalin.security.RouteRole;
 import com.google.gson.Gson;
 import Request.LoginRequest;
 import Response.LoginResponse;
-import service.LoginService;
-import service.RegisterService;
+import service.*;
 
 import java.util.Map;
 
 public class Server {
 
+    public static final Gson gson = new Gson();
     private final Javalin javalin;
+    private final AuthenticationService authenticationService;
     private final LoginService loginService;
     private final RegisterService registerService;
-    public static final Gson gson = new Gson();
+    private final LogoutService logoutService;
+    private final DeleteService deleteService;
+
+    enum Permission implements RouteRole{
+        PUBLIC,
+        AUTHENTICATED
+    }
 
     public Server(){
-        this(new MemoryUserDao()
+        this(
+            new MemoryUserDao(),
+            new MemoryAuthDao(),
+            new MemoryGameDao()
         );
     }
 
-    public Server(UserDao userDao) {
+    public Server(UserDao userDao, AuthDao authDao, GameDao gameDao) {
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
         // Register your endpoints and exception handlers here.
-            .post("/user", this::register)
-            .post("/session", this::login)
-            .delete("/session", this::logout)
+            .post("/user", this::register, Permission.PUBLIC)
+            .post("/session", this::login, Permission.PUBLIC)
+            .delete("/session", this::logout, Permission.AUTHENTICATED)
             .delete("/db", this::delete)
-            .get("/game", this::listGames)
-            .post("/game", this::createGame)
-            .put("/game", this::joinGame)
+            .get("/game", this::listGames, Permission.AUTHENTICATED)
+            .post("/game", this::createGame, Permission.AUTHENTICATED)
+            .put("/game", this::joinGame, Permission.AUTHENTICATED)
+            .beforeMatched(this::checkPermission)
             .exception(ResponseException.class, this::responseExceptionHandler)
             .exception(Exception.class, this::serverErrorHandler);
 
-        loginService = new LoginService(userDao);
-        registerService = new RegisterService(userDao);
+        authenticationService = new AuthenticationService(authDao);
+        registerService = new RegisterService(userDao, authDao);
+        loginService = new LoginService(userDao, authDao);
+        logoutService = new LogoutService(authDao);
+        deleteService = new DeleteService(userDao, authDao, gameDao);
     }
 
     private void register(Context context) throws DataAccessException, ResponseException {
-//        RegisterRequest registerRequest = gson.fromJson(context.body(), RegisterRequest.class);
         RegisterRequest registerRequest = deserializeRequest(context.body(), RegisterRequest.class);
         RegisterResponse registerResponse = registerService.register(registerRequest);
         context.status(200);
@@ -54,27 +68,41 @@ public class Server {
     }
 
     private void login(Context context) throws ResponseException, DataAccessException {
-    //        LoginRequest loginRequest = gson.fromJson(context.body(), LoginRequest.class);
         LoginRequest loginRequest = deserializeRequest(context.body(), LoginRequest.class);
         LoginResponse loginResponse = loginService.login(loginRequest);
         context.status(200);
         context.result(gson.toJson(loginResponse));
     }
 
-    private void logout(Context context) {
-
+    private void logout(Context context) throws ResponseException, DataAccessException {
+        String authToken = context.header("authorization");
+        logoutService.logout(authToken);
+        context.status(200);
     }
-    private void delete(Context context) {
 
+    private void delete(Context context) throws DataAccessException {
+        deleteService.clearAll();
+        context.status(200);
     }
     private void listGames(Context context) {
 
     }
-    private void createGame(Context context) {
-
+    private void createGame(Context context) throws ResponseException {
+        String authToken = context.header("authorization");
+        CreateGameRequest createGameRequest = deserializeRequest(context.body(), CreateGameRequest.class);
     }
     private void joinGame(Context context) {
 
+    }
+
+    private void checkPermission(Context context) throws DataAccessException, ResponseException {
+        var permission = context.routeRoles();
+        if (permission.contains(Permission.AUTHENTICATED)){
+            String authToken = context.header("authorization");
+            if (!authenticationService.isValidToken(authToken)){
+                throw new ResponseException(ResponseException.httpCode.unauthorized, "Error: unauthorized");
+            }
+        }
     }
 
     private void responseExceptionHandler(ResponseException exception, Context context) {
