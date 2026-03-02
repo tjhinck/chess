@@ -19,6 +19,6 @@ public class DeleteService {
     public void clearAll() throws DataAccessException {
         userDao.clearData();
         authDao.clearData();
-        // todo add clear gamedao
+        gameDao.clearData();
     }
 }

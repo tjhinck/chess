@@ -25,6 +25,7 @@ public class Server {
     private final RegisterService registerService;
     private final LogoutService logoutService;
     private final DeleteService deleteService;
+    private final CreateGameService createGameService;
 
     enum Permission implements RouteRole{
         PUBLIC,
@@ -58,6 +59,7 @@ public class Server {
         loginService = new LoginService(userDao, authDao);
         logoutService = new LogoutService(authDao);
         deleteService = new DeleteService(userDao, authDao, gameDao);
+        createGameService = new CreateGameService(gameDao);
     }
 
     private void register(Context context) throws DataAccessException, ResponseException {
@@ -67,14 +69,14 @@ public class Server {
         context.result(gson.toJson(registerResponse));
     }
 
-    private void login(Context context) throws ResponseException, DataAccessException {
+    private void login(Context context) throws DataAccessException, ResponseException {
         LoginRequest loginRequest = deserializeRequest(context.body(), LoginRequest.class);
         LoginResponse loginResponse = loginService.login(loginRequest);
         context.status(200);
         context.result(gson.toJson(loginResponse));
     }
 
-    private void logout(Context context) throws ResponseException, DataAccessException {
+    private void logout(Context context) throws DataAccessException {
         String authToken = context.header("authorization");
         logoutService.logout(authToken);
         context.status(200);
@@ -87,9 +89,11 @@ public class Server {
     private void listGames(Context context) {
 
     }
-    private void createGame(Context context) throws ResponseException {
-        String authToken = context.header("authorization");
+    private void createGame(Context context) throws ResponseException, DataAccessException {
         CreateGameRequest createGameRequest = deserializeRequest(context.body(), CreateGameRequest.class);
+        CreateGameResponse createGameResponse = createGameService.createGame(createGameRequest);
+        context.status(200);
+        context.result(gson.toJson(createGameResponse));
     }
     private void joinGame(Context context) {
 
