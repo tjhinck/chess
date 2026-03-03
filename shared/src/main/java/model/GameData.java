@@ -5,7 +5,7 @@ import chess.ChessGame;
 public class GameData {
     private final int gameID;
     private String gameName;
-    private final ChessGame chessGame;
+    transient private final ChessGame chessGame;
     private String whiteUsername;
     private String blackUsername;
 

@@ -10,8 +10,10 @@ import io.javalin.http.Context;
 import io.javalin.security.RouteRole;
 import com.google.gson.Gson;
 import Request.LoginRequest;
+import model.GameData;
 import service.*;
 
+import java.util.Collection;
 import java.util.Map;
 
 public class Server {
@@ -25,8 +27,9 @@ public class Server {
     private final DeleteService deleteService;
     private final CreateGameService createGameService;
     private final JoinGameService joinGameService;
+    private final ListGamesService listGamesService;
 
-    enum Permission implements RouteRole{
+    enum Permission implements RouteRole {
         PUBLIC,
         AUTHENTICATED
     }
@@ -41,7 +44,6 @@ public class Server {
 
     public Server(UserDao userDao, AuthDao authDao, GameDao gameDao) {
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
-        // Register your endpoints and exception handlers here.
             .post("/user", this::register, Permission.PUBLIC)
             .post("/session", this::login, Permission.PUBLIC)
             .delete("/session", this::logout, Permission.AUTHENTICATED)
@@ -60,6 +62,7 @@ public class Server {
         deleteService = new DeleteService(userDao, authDao, gameDao);
         createGameService = new CreateGameService(gameDao);
         joinGameService = new JoinGameService(gameDao, authDao);
+        listGamesService = new ListGamesService(gameDao);
     }
 
     private void register(Context context) throws DataAccessException, ResponseException {
@@ -86,8 +89,10 @@ public class Server {
         deleteService.clearAll();
         context.status(200);
     }
-    private void listGames(Context context) throws DataAccessException, ResponseException{
-
+    private void listGames(Context context) throws DataAccessException{
+        ListGamesResponse listGamesResponse = listGamesService.listGames();
+        context.status(200);
+        context.result(gson.toJson(listGamesResponse));
     }
     private void createGame(Context context) throws ResponseException, DataAccessException {
         CreateGameRequest createGameRequest = deserializeRequest(context.body(), CreateGameRequest.class);
@@ -119,9 +124,7 @@ public class Server {
 
     private void serverErrorHandler(Exception exception, Context context){
         context.status(500);
-        context.result(gson.toJson(Map.of(
-                "message", exception.getMessage()
-        )));
+        context.result(gson.toJson(Map.of("message", exception.getMessage())));
     }
 
     private <T> T deserializeRequest(String json, Class<T> requestType) throws ResponseException{
@@ -131,7 +134,6 @@ public class Server {
             throw new ResponseException(ResponseException.httpCode.badRequest, "Error: bad request");
         }
     }
-
 
     public int run(int desiredPort) {
         javalin.start(desiredPort);
