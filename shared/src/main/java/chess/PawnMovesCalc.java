@@ -36,19 +36,7 @@ public final class PawnMovesCalc extends MovesCalc{
         // check diagonal capture
         int[] captureColumns = {newCol + 1, newCol - 1};
         for (int captureCol : captureColumns){
-            if (ChessPosition.isValid(newRow, captureCol)){
-                ChessPiece occupant = board.getPiece(newRow, captureCol);
-                if (occupant != null && occupant.getTeamColor() != pawnColor){
-                    if (newRow == promotionRow){
-                        // add move for each promotion type
-                        for (ChessPiece.PieceType pieceType : promotionTypes){
-                            moves.add(new ChessMove(position, new ChessPosition(newRow, captureCol), pieceType));
-                        }
-                    } else {
-                        moves.add(new ChessMove(position, new ChessPosition(newRow, captureCol), null));
-                    }
-                }
-            }
+            diagonalCapture(captureCol, newRow, promotionRow, pawnColor, moves);
         }
         // check moving forward one square
         if (ChessPosition.isValid(newRow, newCol)){
@@ -74,6 +62,22 @@ public final class PawnMovesCalc extends MovesCalc{
         }
 
         return moves;
+    }
+
+    private void diagonalCapture(int captureCol, int newRow, int promotionRow,ChessGame.TeamColor pawnColor, Collection<ChessMove> moves){
+        if (ChessPosition.isValid(newRow, captureCol)){
+            ChessPiece occupant = board.getPiece(newRow, captureCol);
+            if (occupant != null && occupant.getTeamColor() != pawnColor){
+                if (newRow == promotionRow){
+                    // add move for each promotion type
+                    for (ChessPiece.PieceType pieceType : promotionTypes){
+                        moves.add(new ChessMove(position, new ChessPosition(newRow, captureCol), pieceType));
+                    }
+                } else {
+                    moves.add(new ChessMove(position, new ChessPosition(newRow, captureCol), null));
+                }
+            }
+        }
     }
 }
 

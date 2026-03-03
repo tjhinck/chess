@@ -142,13 +142,20 @@ public class ChessBoard implements Cloneable{
             for (int col = 0; col < 8; col++){
                 ChessPiece piece = squares[row][col];
                 if (piece != null && piece.getTeamColor() != kingColor){
-                    Collection<ChessMove> moves = piece.pieceMoves(this, new ChessPosition(row+1, col+1));
-                    for (ChessMove move : moves){
-                        if (move.getEndPosition().equals(kingPosition)){
-                            return true;
-                        }
+                    if (pieceCanCheckKing(piece, kingPosition, row, col)){
+                        return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    private boolean pieceCanCheckKing(ChessPiece piece, ChessPosition kingPosition, int row, int col){
+        Collection<ChessMove> moves = piece.pieceMoves(this, new ChessPosition(row+1, col+1));
+        for (ChessMove move : moves){
+            if (move.getEndPosition().equals(kingPosition)){
+                return true;
             }
         }
         return false;
