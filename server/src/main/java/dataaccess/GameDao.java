@@ -1,12 +1,12 @@
 package dataaccess;
 
-import chess.ChessGame;
+import model.GameData;
 
 public interface GameDao {
 
-    void addGame(int gameID, ChessGame chessGame) throws DataAccessException;
+    void addGame(GameData gameData) throws DataAccessException;
 
-
+    GameData getGame(int gameID) throws DataAccessException;
 
     void clearData() throws DataAccessException;
 }

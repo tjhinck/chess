@@ -5,6 +5,7 @@ import Response.CreateGameResponse;
 import chess.ChessGame;
 import dataaccess.DataAccessException;
 import dataaccess.GameDao;
+import model.GameData;
 
 public class CreateGameService {
     private final GameDao gameDao;
@@ -15,9 +16,9 @@ public class CreateGameService {
     }
 
     public CreateGameResponse createGame(CreateGameRequest request) throws DataAccessException {
-        ChessGame newGame = new ChessGame();
         newGameID++;
-        gameDao.addGame(newGameID, newGame);
+        GameData newGame = new GameData(newGameID, request.gameName(), new ChessGame());
+        gameDao.addGame(newGame);
         return new CreateGameResponse(newGameID);
     }
 }

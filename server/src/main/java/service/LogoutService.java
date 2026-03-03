@@ -1,6 +1,5 @@
 package service;
 
-import Response.ResponseException;
 import dataaccess.AuthDao;
 import dataaccess.DataAccessException;
 

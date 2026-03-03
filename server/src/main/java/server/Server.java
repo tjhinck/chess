@@ -1,17 +1,15 @@
 package server;
 
 import Request.CreateGameRequest;
+import Request.JoinGameRequest;
 import Request.RegisterRequest;
-import Response.CreateGameResponse;
-import Response.RegisterResponse;
-import Response.ResponseException;
+import Response.*;
 import dataaccess.*;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.security.RouteRole;
 import com.google.gson.Gson;
 import Request.LoginRequest;
-import Response.LoginResponse;
 import service.*;
 
 import java.util.Map;
@@ -26,6 +24,7 @@ public class Server {
     private final LogoutService logoutService;
     private final DeleteService deleteService;
     private final CreateGameService createGameService;
+    private final JoinGameService joinGameService;
 
     enum Permission implements RouteRole{
         PUBLIC,
@@ -60,6 +59,7 @@ public class Server {
         logoutService = new LogoutService(authDao);
         deleteService = new DeleteService(userDao, authDao, gameDao);
         createGameService = new CreateGameService(gameDao);
+        joinGameService = new JoinGameService(gameDao, authDao);
     }
 
     private void register(Context context) throws DataAccessException, ResponseException {
@@ -86,7 +86,7 @@ public class Server {
         deleteService.clearAll();
         context.status(200);
     }
-    private void listGames(Context context) {
+    private void listGames(Context context) throws DataAccessException, ResponseException{
 
     }
     private void createGame(Context context) throws ResponseException, DataAccessException {
@@ -95,8 +95,11 @@ public class Server {
         context.status(200);
         context.result(gson.toJson(createGameResponse));
     }
-    private void joinGame(Context context) {
-
+    private void joinGame(Context context) throws DataAccessException, ResponseException {
+        JoinGameRequest joinGameRequest = deserializeRequest(context.body(), JoinGameRequest.class);
+        String authToken = context.header("authorization");
+        joinGameService.joinGame(joinGameRequest, authToken);
+        context.status(200);
     }
 
     private void checkPermission(Context context) throws DataAccessException, ResponseException {
