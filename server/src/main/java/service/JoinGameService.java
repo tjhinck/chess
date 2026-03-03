@@ -24,7 +24,7 @@ public class JoinGameService {
             AuthData foundAuth = authDao.getAuthData(authToken);
             addPlayer(request.playerColor(), foundAuth.username(), foundGame);
         } else {
-            throw new ResponseException(ResponseException.httpCode.badRequest, "Error: bad request");
+            throw new ResponseException(ResponseException.HttpCode.badRequest, "Error: bad request");
         }
     }
 
@@ -33,16 +33,16 @@ public class JoinGameService {
             if (gameData.isWhiteOpen()){
                 gameData.setWhiteUsername(username);
             } else {
-                throw new ResponseException(ResponseException.httpCode.alreadyTaken, "Error: already taken");
+                throw new ResponseException(ResponseException.HttpCode.alreadyTaken, "Error: already taken");
             }
         } else if (playerColor == TeamColor.BLACK) {
             if (gameData.isBlackOpen()){
                 gameData.setBlackUsername(username);
             } else {
-                throw new ResponseException(ResponseException.httpCode.alreadyTaken, "Error: already taken");
+                throw new ResponseException(ResponseException.HttpCode.alreadyTaken, "Error: already taken");
             }
         } else {
-            throw new ResponseException(ResponseException.httpCode.badRequest, "Error: bad request");
+            throw new ResponseException(ResponseException.HttpCode.badRequest, "Error: bad request");
         }
     }
 }

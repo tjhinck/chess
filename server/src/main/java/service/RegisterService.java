@@ -30,7 +30,7 @@ public class RegisterService {
             authDao.addAuthData(newAuthData);
             return new RegisterResponse(request.username(), newAuthToken);
         } else {
-            throw new ResponseException(ResponseException.httpCode.alreadyTaken, "Error: already taken");
+            throw new ResponseException(ResponseException.HttpCode.alreadyTaken, "Error: already taken");
         }
     }
 }

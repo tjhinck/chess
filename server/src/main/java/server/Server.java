@@ -110,7 +110,7 @@ public class Server {
         if (permission.contains(Permission.AUTHENTICATED)){
             String authToken = context.header("authorization");
             if (!authenticationService.isValidToken(authToken)){
-                throw new ResponseException(ResponseException.httpCode.unauthorized, "Error: unauthorized");
+                throw new ResponseException(ResponseException.HttpCode.unauthorized, "Error: unauthorized");
             }
         }
     }
@@ -129,7 +129,7 @@ public class Server {
         try{
             return GSON.fromJson(json, requestType);
         } catch (Exception e){
-            throw new ResponseException(ResponseException.httpCode.badRequest, "Error: bad request");
+            throw new ResponseException(ResponseException.HttpCode.badRequest, "Error: bad request");
         }
     }
 

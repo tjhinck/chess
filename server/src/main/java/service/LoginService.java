@@ -30,7 +30,7 @@ public class LoginService {
             authDao.addAuthData(newAuthData);
             return new LoginResponse(request.username(), newAuthToken);
         } else {
-            throw new ResponseException(ResponseException.httpCode.unauthorized, "Error: unauthorized");
+            throw new ResponseException(ResponseException.HttpCode.unauthorized, "Error: unauthorized");
         }
     }
 }

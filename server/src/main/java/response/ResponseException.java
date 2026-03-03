@@ -6,17 +6,17 @@ import java.util.Map;
 public class ResponseException extends Exception {
     int code;
 
-    public enum httpCode{
+    public enum HttpCode {
         badRequest(400),
         unauthorized(401),
         alreadyTaken(403);
 
         private final int code;
-        httpCode(int code) { this.code = code; }
+        HttpCode(int code) { this.code = code; }
         public int getCode(){ return code; }
     }
 
-    public ResponseException(httpCode httpCode, String message) {
+    public ResponseException(HttpCode httpCode, String message) {
         super(message);
         code = httpCode.getCode();
     }
