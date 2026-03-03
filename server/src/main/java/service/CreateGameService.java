@@ -1,7 +1,7 @@
 package service;
 
-import Request.CreateGameRequest;
-import Response.CreateGameResponse;
+import request.CreateGameRequest;
+import response.CreateGameResponse;
 import chess.ChessGame;
 import dataaccess.DataAccessException;
 import dataaccess.GameDao;

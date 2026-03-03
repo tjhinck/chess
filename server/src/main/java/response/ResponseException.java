@@ -1,4 +1,4 @@
-package Response;
+package response;
 
 import server.Server;
 import java.util.Map;
@@ -26,6 +26,6 @@ public class ResponseException extends Exception {
     }
 
     public String toJson(){
-        return Server.gson.toJson(Map.of("message", getMessage(), "status", code));
+        return Server.GSON.toJson(Map.of("message", getMessage(), "status", code));
     }
 }

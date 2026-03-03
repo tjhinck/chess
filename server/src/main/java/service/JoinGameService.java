@@ -1,7 +1,7 @@
 package service;
 
-import Request.JoinGameRequest;
-import Response.ResponseException;
+import request.JoinGameRequest;
+import response.ResponseException;
 import chess.ChessGame.TeamColor;
 import dataaccess.AuthDao;
 import dataaccess.DataAccessException;

@@ -1,8 +1,8 @@
 package service;
 
-import Request.LoginRequest;
-import Response.LoginResponse;
-import Response.ResponseException;
+import request.LoginRequest;
+import response.LoginResponse;
+import response.ResponseException;
 import dataaccess.*;
 import model.UserData;
 import org.junit.jupiter.api.BeforeAll;

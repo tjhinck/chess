@@ -1,6 +1,6 @@
 package service;
 
-import Response.ListGamesResponse;
+import response.ListGamesResponse;
 import dataaccess.DataAccessException;
 import dataaccess.GameDao;
 

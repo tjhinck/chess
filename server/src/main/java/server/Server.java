@@ -1,24 +1,22 @@
 package server;
 
-import Request.CreateGameRequest;
-import Request.JoinGameRequest;
-import Request.RegisterRequest;
-import Response.*;
+import request.CreateGameRequest;
+import request.JoinGameRequest;
+import request.RegisterRequest;
+import response.*;
 import dataaccess.*;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.security.RouteRole;
 import com.google.gson.Gson;
-import Request.LoginRequest;
-import model.GameData;
+import request.LoginRequest;
 import service.*;
 
-import java.util.Collection;
 import java.util.Map;
 
 public class Server {
 
-    public static final Gson gson = new Gson();
+    public static final Gson GSON = new Gson();
     private final Javalin javalin;
     private final AuthenticationService authenticationService;
     private final LoginService loginService;
@@ -69,14 +67,14 @@ public class Server {
         RegisterRequest registerRequest = deserializeRequest(context.body(), RegisterRequest.class);
         RegisterResponse registerResponse = registerService.register(registerRequest);
         context.status(200);
-        context.result(gson.toJson(registerResponse));
+        context.result(GSON.toJson(registerResponse));
     }
 
     private void login(Context context) throws DataAccessException, ResponseException {
         LoginRequest loginRequest = deserializeRequest(context.body(), LoginRequest.class);
         LoginResponse loginResponse = loginService.login(loginRequest);
         context.status(200);
-        context.result(gson.toJson(loginResponse));
+        context.result(GSON.toJson(loginResponse));
     }
 
     private void logout(Context context) throws DataAccessException {
@@ -92,13 +90,13 @@ public class Server {
     private void listGames(Context context) throws DataAccessException{
         ListGamesResponse listGamesResponse = listGamesService.listGames();
         context.status(200);
-        context.result(gson.toJson(listGamesResponse));
+        context.result(GSON.toJson(listGamesResponse));
     }
     private void createGame(Context context) throws ResponseException, DataAccessException {
         CreateGameRequest createGameRequest = deserializeRequest(context.body(), CreateGameRequest.class);
         CreateGameResponse createGameResponse = createGameService.createGame(createGameRequest);
         context.status(200);
-        context.result(gson.toJson(createGameResponse));
+        context.result(GSON.toJson(createGameResponse));
     }
     private void joinGame(Context context) throws DataAccessException, ResponseException {
         JoinGameRequest joinGameRequest = deserializeRequest(context.body(), JoinGameRequest.class);
@@ -124,12 +122,12 @@ public class Server {
 
     private void serverErrorHandler(Exception exception, Context context){
         context.status(500);
-        context.result(gson.toJson(Map.of("message", exception.getMessage())));
+        context.result(GSON.toJson(Map.of("message", exception.getMessage())));
     }
 
     private <T> T deserializeRequest(String json, Class<T> requestType) throws ResponseException{
         try{
-            return gson.fromJson(json, requestType);
+            return GSON.fromJson(json, requestType);
         } catch (Exception e){
             throw new ResponseException(ResponseException.httpCode.badRequest, "Error: bad request");
         }
