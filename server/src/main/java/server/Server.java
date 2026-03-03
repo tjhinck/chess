@@ -77,7 +77,7 @@ public class Server {
         context.result(GSON.toJson(loginResponse));
     }
 
-    private void logout(Context context) throws DataAccessException {
+    private void logout(Context context) throws DataAccessException, ResponseException {
         String authToken = context.header("authorization");
         logoutService.logout(authToken);
         context.status(200);

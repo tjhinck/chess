@@ -2,6 +2,7 @@ package service;
 
 import dataaccess.AuthDao;
 import dataaccess.DataAccessException;
+import response.ResponseException;
 
 public class LogoutService {
     private final AuthDao authDao;
@@ -10,7 +11,11 @@ public class LogoutService {
         this.authDao = authDao;
     }
 
-    public void logout(String authToken) throws DataAccessException {
-        authDao.removeAuthData(authToken);
+    public void logout(String authToken) throws DataAccessException, ResponseException {
+        if (authDao.getAuthData(authToken) != null) {
+            authDao.removeAuthData(authToken);
+        } else {
+            throw new ResponseException(ResponseException.HttpCode.badRequest, "Error: bad request");
+        }
     }
 }
