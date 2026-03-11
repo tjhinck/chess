@@ -28,21 +28,39 @@ public class JoinGameService {
         }
     }
 
-    private void addPlayer(TeamColor playerColor, String username, GameData gameData) throws ResponseException {
+    private void addPlayer(TeamColor playerColor, String username, GameData gameData) throws ResponseException, DataAccessException {
         if (playerColor == TeamColor.WHITE){
-            if (gameData.isWhiteOpen()){
-                gameData.setWhiteUsername(username);
+            if (isWhiteOpen(gameData)){
+                GameData updatedGame = setWhiteUsername(gameData, username);
+                gameDao.updateGame(updatedGame);
             } else {
                 throw new ResponseException(ResponseException.HttpCode.alreadyTaken, "Error: already taken");
             }
         } else if (playerColor == TeamColor.BLACK) {
-            if (gameData.isBlackOpen()){
-                gameData.setBlackUsername(username);
+            if (isBlackOpen(gameData)){
+                GameData updatedGame = setBlackUsername(gameData, username);
+                gameDao.updateGame(updatedGame);
             } else {
                 throw new ResponseException(ResponseException.HttpCode.alreadyTaken, "Error: already taken");
             }
         } else {
             throw new ResponseException(ResponseException.HttpCode.badRequest, "Error: bad request");
         }
+    }
+
+    private boolean isWhiteOpen(GameData gameData){
+        return gameData.whiteUsername() == null;
+    }
+
+    private boolean isBlackOpen(GameData gameData){
+        return gameData.blackUsername() == null;
+    }
+
+    private GameData setWhiteUsername(GameData gameData, String whiteUsername){
+        return new GameData(gameData.gameId(), gameData.gameName(), gameData.chessGame(), whiteUsername, gameData.blackUsername());
+    }
+
+    private GameData setBlackUsername(GameData gameData, String blackUsername){
+        return new GameData(gameData.gameId(), gameData.gameName(), gameData.chessGame(), gameData.whiteUsername(), blackUsername);
     }
 }

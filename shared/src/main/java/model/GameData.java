@@ -2,40 +2,17 @@ package model;
 
 import chess.ChessGame;
 
-public class GameData {
-    private final int gameID;
-    private String gameName;
-    transient private final ChessGame chessGame;
-    private String whiteUsername;
-    private String blackUsername;
+import java.util.Objects;
 
-    public GameData(int gameID, String gameName, ChessGame chessGame) {
-        this.gameID = gameID;
-        this.gameName = gameName;
-        this.chessGame = chessGame;
-    }
-
-    public int getGameID(){
-        return gameID;
-    }
-
-    public String getGameName(){
-        return gameName;
-    }
-
-    public void setWhiteUsername(String username){
-        whiteUsername = username;
-    }
-
-    public void setBlackUsername(String username){
-        blackUsername = username;
-    }
-
-    public boolean isWhiteOpen(){
-        return whiteUsername == null;
-    }
-
-    public boolean isBlackOpen(){
-        return blackUsername == null;
+public record GameData(
+        int gameId,
+        String gameName,
+        ChessGame chessGame,
+        String whiteUsername,
+        String blackUsername) {
+    public GameData {
+        Objects.requireNonNull(gameId, "gameID required");
+        Objects.requireNonNull(gameName, "gameName required");
+        Objects.requireNonNull(chessGame, "chessGame required");
     }
 }

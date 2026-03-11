@@ -17,7 +17,7 @@ public class CreateGameService {
 
     public CreateGameResponse createGame(CreateGameRequest request) throws DataAccessException {
         newGameID++;
-        GameData newGame = new GameData(newGameID, request.gameName(), new ChessGame());
+        GameData newGame = new GameData(newGameID, request.gameName(), new ChessGame(), null, null);
         gameDao.addGame(newGame);
         return new CreateGameResponse(newGameID);
     }

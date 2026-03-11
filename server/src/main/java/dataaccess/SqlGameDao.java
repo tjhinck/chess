@@ -23,7 +23,7 @@ public class SqlGameDao implements GameDao{
     public void addGame(GameData gameData) throws DataAccessException {
         var statement = "INSERT INTO games (gameID, gameDataJson) VALUES (?, ?)";
         String json = Server.GSON.toJson(gameData);
-        executeUpdate(statement, gameData.getGameID(), json);
+        executeUpdate(statement, gameData.gameId(), json);
     }
 
     @Override
