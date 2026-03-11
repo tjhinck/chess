@@ -1,6 +1,5 @@
 package server;
 
-import model.AuthData;
 import request.CreateGameRequest;
 import request.JoinGameRequest;
 import request.RegisterRequest;
@@ -45,9 +44,9 @@ public class Server {
             throw new RuntimeException(e);
         }
         this(
-                userDao,
-                authDao,
-                gameDao
+            userDao,
+            authDao,
+            gameDao
         );
     }
 

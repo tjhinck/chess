@@ -1,7 +1,6 @@
 package server;
 
 import dataaccess.*;
-import response.ResponseException;
 
 public class ServerMain {
     public static void main(String[] args) throws DataAccessException {
