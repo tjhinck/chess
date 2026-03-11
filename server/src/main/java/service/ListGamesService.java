@@ -11,6 +11,7 @@ public class ListGamesService {
         this.gameDao = gameDao;
     }
 
+    // todo don't send entire game data
     public ListGamesResponse listGames() throws DataAccessException {
         return new ListGamesResponse(gameDao.listGames());
     }

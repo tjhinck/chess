@@ -8,7 +8,17 @@ public record RegisterRequest(
         String email) {
     public RegisterRequest{
         Objects.requireNonNull(username, "username required");
-        Objects.requireNonNull(password, "passwordHash required");
+        Objects.requireNonNull(password, "password required");
         Objects.requireNonNull(email, "email required");
+
+        if (username.isBlank()) {
+            throw new IllegalArgumentException("username cannot be blank");
+        }
+        if (password.isBlank()) {
+            throw new IllegalArgumentException("password cannot be blank");
+        }
+        if (email.isBlank()) {
+            throw new IllegalArgumentException("email cannot be blank");
+        }
     }
 }
