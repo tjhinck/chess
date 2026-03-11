@@ -1,5 +1,6 @@
 package service;
 
+import org.mindrot.jbcrypt.BCrypt;
 import request.LoginRequest;
 import response.LoginResponse;
 import response.ResponseException;
@@ -31,7 +32,8 @@ public class LoginServiceTests {
         userDao.clearData();
         authDao.clearData();
         loginService = new LoginService(userDao, authDao);
-        testUser = new UserData("username", "secretpassword", "hey@yahoo.com");
+        String passwordHash = BCrypt.hashpw("secretpassword", BCrypt.gensalt());
+        testUser = new UserData("username", passwordHash, "hey@yahoo.com");
         userDao.addUser(testUser);
     }
 

@@ -30,15 +30,15 @@ public class JoinGameService {
 
     private void addPlayer(TeamColor playerColor, String username, GameData gameData) throws ResponseException, DataAccessException {
         if (playerColor == TeamColor.WHITE){
-            if (isWhiteOpen(gameData)){
-                GameData updatedGame = setWhiteUsername(gameData, username);
+            if (gameData.whiteUsername() == null){
+                GameData updatedGame = new GameData(gameData.gameID(), gameData.gameName(), gameData.chessGame(), username, gameData.blackUsername());
                 gameDao.updateGame(updatedGame);
             } else {
                 throw new ResponseException(ResponseException.HttpCode.alreadyTaken, "Error: already taken");
             }
         } else if (playerColor == TeamColor.BLACK) {
-            if (isBlackOpen(gameData)){
-                GameData updatedGame = setBlackUsername(gameData, username);
+            if (gameData.blackUsername() == null){
+                GameData updatedGame = new GameData(gameData.gameID(), gameData.gameName(), gameData.chessGame(), gameData.whiteUsername(), username);
                 gameDao.updateGame(updatedGame);
             } else {
                 throw new ResponseException(ResponseException.HttpCode.alreadyTaken, "Error: already taken");
@@ -46,21 +46,5 @@ public class JoinGameService {
         } else {
             throw new ResponseException(ResponseException.HttpCode.badRequest, "Error: bad request");
         }
-    }
-
-    private boolean isWhiteOpen(GameData gameData){
-        return gameData.whiteUsername() == null;
-    }
-
-    private boolean isBlackOpen(GameData gameData){
-        return gameData.blackUsername() == null;
-    }
-
-    private GameData setWhiteUsername(GameData gameData, String whiteUsername){
-        return new GameData(gameData.gameID(), gameData.gameName(), gameData.chessGame(), whiteUsername, gameData.blackUsername());
-    }
-
-    private GameData setBlackUsername(GameData gameData, String blackUsername){
-        return new GameData(gameData.gameID(), gameData.gameName(), gameData.chessGame(), gameData.whiteUsername(), blackUsername);
     }
 }
