@@ -1,5 +1,6 @@
 package server;
 
+import model.AuthData;
 import request.CreateGameRequest;
 import request.JoinGameRequest;
 import request.RegisterRequest;
@@ -32,11 +33,21 @@ public class Server {
         AUTHENTICATED
     }
 
-    public Server(){
+    public Server() {
+        UserDao userDao;
+        AuthDao authDao;
+        GameDao gameDao;
+        try {
+            userDao = new SqlUserDao();
+            authDao = new SqlAuthDao();
+            gameDao = new SqlGameDao();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         this(
-            new MemoryUserDao(),
-            new MemoryAuthDao(),
-            new MemoryGameDao()
+                userDao,
+                authDao,
+                gameDao
         );
     }
 

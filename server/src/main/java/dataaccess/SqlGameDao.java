@@ -7,8 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
@@ -45,12 +45,26 @@ public class SqlGameDao implements GameDao{
 
     @Override
     public Collection<GameData> listGames() throws DataAccessException {
-        return List.of();
+        Collection<GameData> games = new ArrayList<>();
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT gameDataJson FROM games";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        games.add(Server.GSON.fromJson(rs.getString("gameDataJson"), GameData.class));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+        }
+        return games;
     }
 
     @Override
     public void updateGame(GameData updatedGame) throws DataAccessException {
-
+        var statement = "UPDATE games SET gameDataJson=? WHERE gameID=?";
+        executeUpdate(statement, updatedGame, updatedGame.gameID());
     }
 
     @Override
@@ -66,6 +80,7 @@ public class SqlGameDao implements GameDao{
                     Object param = params[i];
                     if (param instanceof String p) ps.setString(i + 1, p);
                     else if (param instanceof GameData p) ps.setString(i + 1, p.toString());
+                    else if (param instanceof Integer p) ps.setInt(i + 1, p);
                 }
                 ps.executeUpdate();
 

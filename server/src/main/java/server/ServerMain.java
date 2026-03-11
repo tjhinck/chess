@@ -8,7 +8,7 @@ public class ServerMain {
         Server server = new Server(
                 new SqlUserDao(),
                 new SqlAuthDao(),
-                new MemoryGameDao()
+                new SqlGameDao()
         );
 
         server.run(8080);
