@@ -1,7 +1,6 @@
 package dataaccess;
 
 import model.AuthData;
-import response.ResponseException;
 import server.Server;
 
 import java.sql.Connection;
@@ -10,7 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.sql.Types.NULL;
 
 public class SqlAuthDao implements AuthDao {
 
@@ -27,14 +25,28 @@ public class SqlAuthDao implements AuthDao {
 
     @Override
     public void removeAuthData(String authToken) throws DataAccessException {
-        var statement = "DELETE FROM authRecord WHERE id=?";
+        var statement = "DELETE FROM authRecord WHERE authToken=?";
         executeUpdate(statement, authToken);
     }
 
     @Override
     public AuthData getAuthData(String authToken) throws DataAccessException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT authDataJson FROM authRecord WHERE authToken=?";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setString(1, authToken);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return Server.GSON.fromJson(rs.getString("authDataJson"), AuthData.class);
+                    }
+                }
+            }
+        } catch (Exception e) {
+           throw new DataAccessException(String.format("unable to get data: %s", e.getMessage()));
+        }
         return null;
     }
+
 
     @Override
     public void clearData() throws DataAccessException {
