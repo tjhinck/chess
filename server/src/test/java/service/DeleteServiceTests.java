@@ -46,7 +46,7 @@ public class DeleteServiceTests {
 
     @Test
     public void gameCleared() throws DataAccessException {
-        gameDao.addGame(new GameData(1, "coolgame", new ChessGame()));
+        gameDao.addGame(new GameData(1, "coolgame", new ChessGame(), null, null));
         deleteService.clearAll();
         assertNull(gameDao.getGame(1));
     }

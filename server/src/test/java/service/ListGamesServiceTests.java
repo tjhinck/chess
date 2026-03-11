@@ -30,7 +30,7 @@ public class ListGamesServiceTests {
 
     @Test
     public void showGame() throws DataAccessException {
-        GameData game = new GameData(1, "goodgame", new ChessGame());
+        GameData game = new GameData(1, "goodgame", new ChessGame(), null, null);
         gameDao.addGame(game);
         ListGamesResponse listGamesResponse = listGamesService.listGames();
         assertTrue(listGamesResponse.games().contains(game));

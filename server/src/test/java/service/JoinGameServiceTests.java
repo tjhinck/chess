@@ -35,18 +35,19 @@ public class JoinGameServiceTests {
 
     @Test
     public void joinSuccess() throws DataAccessException, ResponseException {
-        GameData game = new GameData(1, "goodgame", new ChessGame());
+        GameData game = new GameData(1, "goodgame", new ChessGame(), null, null);
         AuthData auth = new AuthData("secrettoken", "username");
         gameDao.addGame(game);
         authDao.addAuthData(auth);
         JoinGameRequest request = new JoinGameRequest(1, ChessGame.TeamColor.WHITE);
         joinGameService.joinGame(request, auth.authToken());
-        assertFalse(game.isWhiteOpen());
+        game = gameDao.getGame(1);
+        assertEquals(game.whiteUsername(), "username");
     }
 
     @Test
     public void gameFull() throws DataAccessException, ResponseException {
-        GameData game = new GameData(1, "goodgame", new ChessGame());
+        GameData game = new GameData(1, "goodgame", new ChessGame(), null, null);
         gameDao.addGame(game);
         AuthData whiteAuth = new AuthData("whitetoken", "white");
         AuthData blackAuth = new AuthData("blacktoken", "black");

@@ -10,7 +10,7 @@ public class MemoryGameDao implements GameDao{
 
     @Override
     public void addGame(GameData gameData) throws DataAccessException {
-        games.put(gameData.getGameID(), gameData);
+        games.put(gameData.gameID(), gameData);
     }
 
     @Override
@@ -21,6 +21,11 @@ public class MemoryGameDao implements GameDao{
     @Override
     public Collection<GameData> listGames() throws DataAccessException {
         return games.values();
+    }
+
+    @Override
+    public void updateGame(GameData updatedGame) throws DataAccessException {
+        games.replace(updatedGame.gameID(), updatedGame);
     }
 
     @Override

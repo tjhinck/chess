@@ -57,10 +57,10 @@ public class JoinGameService {
     }
 
     private GameData setWhiteUsername(GameData gameData, String whiteUsername){
-        return new GameData(gameData.gameId(), gameData.gameName(), gameData.chessGame(), whiteUsername, gameData.blackUsername());
+        return new GameData(gameData.gameID(), gameData.gameName(), gameData.chessGame(), whiteUsername, gameData.blackUsername());
     }
 
     private GameData setBlackUsername(GameData gameData, String blackUsername){
-        return new GameData(gameData.gameId(), gameData.gameName(), gameData.chessGame(), gameData.whiteUsername(), blackUsername);
+        return new GameData(gameData.gameID(), gameData.gameName(), gameData.chessGame(), gameData.whiteUsername(), blackUsername);
     }
 }

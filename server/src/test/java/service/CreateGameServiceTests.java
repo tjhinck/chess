@@ -33,7 +33,7 @@ public class CreateGameServiceTests {
         CreateGameRequest request = new CreateGameRequest("coolgame");
         createGameService.createGame(request);
         GameData gamedata =  gameDao.getGame(1);
-        assertEquals(gamedata.getGameName(), "coolgame");
+        assertEquals(gamedata.gameName(), "coolgame");
     }
 
     @Test
