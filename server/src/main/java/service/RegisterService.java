@@ -1,5 +1,6 @@
 package service;
 
+import org.mindrot.jbcrypt.BCrypt;
 import request.RegisterRequest;
 import response.RegisterResponse;
 import response.ResponseException;
@@ -23,7 +24,8 @@ public class RegisterService {
     public RegisterResponse register(RegisterRequest request) throws DataAccessException, ResponseException {
         UserData userCheck = userDao.getUser(request.username());
         if (userCheck == null) {
-            UserData newUser = new UserData(request.username(), request.password(), request.email());
+            String passwordHash = BCrypt.hashpw(request.password(), BCrypt.gensalt());
+            UserData newUser = new UserData(request.username(), passwordHash, request.email());
             userDao.addUser(newUser);
             String newAuthToken = UUID.randomUUID().toString();
             AuthData newAuthData = new AuthData(newAuthToken, request.username());

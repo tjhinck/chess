@@ -4,11 +4,11 @@ import java.util.Objects;
 
 public record UserData(
         String username,
-        String password,
+        String passwordHash,
         String email){
     public UserData{
         Objects.requireNonNull(username, "username required");
-        Objects.requireNonNull(password, "password required");
+        Objects.requireNonNull(passwordHash, "passwordHash required");
         Objects.requireNonNull(email, "email required");
     }
 }

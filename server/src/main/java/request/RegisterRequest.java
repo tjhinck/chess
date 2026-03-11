@@ -8,7 +8,7 @@ public record RegisterRequest(
         String email) {
     public RegisterRequest{
         Objects.requireNonNull(username, "username required");
-        Objects.requireNonNull(password, "password required");
+        Objects.requireNonNull(password, "passwordHash required");
         Objects.requireNonNull(email, "email required");
     }
 }

@@ -32,7 +32,7 @@ public class DeleteServiceTests {
 
     @Test
     public void userCleared() throws DataAccessException {
-        userDao.addUser(new UserData("username", "password", "mailbox"));
+        userDao.addUser(new UserData("username", "passwordHash", "mailbox"));
         deleteService.clearAll();
         assertNull(userDao.getUser("username"));
     }

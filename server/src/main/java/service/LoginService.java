@@ -1,5 +1,6 @@
 package service;
 
+import org.mindrot.jbcrypt.BCrypt;
 import request.LoginRequest;
 import response.LoginResponse;
 import response.ResponseException;
@@ -9,7 +10,6 @@ import dataaccess.UserDao;
 import model.AuthData;
 import model.UserData;
 
-import java.util.Objects;
 import java.util.UUID;
 
 
@@ -24,7 +24,7 @@ public class LoginService {
 
     public LoginResponse login(LoginRequest request) throws DataAccessException, ResponseException {
         UserData foundUser = userDao.getUser(request.username());
-        if (foundUser != null && Objects.equals(foundUser.password(), request.password())){
+        if (foundUser != null && BCrypt.checkpw(request.password(), foundUser.passwordHash())){
             String newAuthToken = UUID.randomUUID().toString();
             AuthData newAuthData = new AuthData(newAuthToken, request.username());
             authDao.addAuthData(newAuthData);
