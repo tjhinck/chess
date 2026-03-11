@@ -9,7 +9,8 @@ public class ResponseException extends Exception {
     public enum HttpCode {
         badRequest(400),
         unauthorized(401),
-        alreadyTaken(403);
+        alreadyTaken(403),
+        serverError(500);
 
         private final int code;
         HttpCode(int code) { this.code = code; }

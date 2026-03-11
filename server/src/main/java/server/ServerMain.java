@@ -1,14 +1,13 @@
 package server;
 
-import dataaccess.MemoryAuthDao;
-import dataaccess.MemoryGameDao;
-import dataaccess.MemoryUserDao;
+import dataaccess.*;
+import response.ResponseException;
 
 public class ServerMain {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws DataAccessException {
         Server server = new Server(
                 new MemoryUserDao(),
-                new MemoryAuthDao(),
+                new SqlAuthDao(),
                 new MemoryGameDao()
         );
 
