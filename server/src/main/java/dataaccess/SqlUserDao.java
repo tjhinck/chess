@@ -12,8 +12,12 @@ import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
 public class SqlUserDao implements UserDao{
 
-    public SqlUserDao() throws DataAccessException {
-        configureDatabase();
+    public SqlUserDao() {
+        try {
+            configureDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

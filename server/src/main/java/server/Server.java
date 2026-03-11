@@ -33,20 +33,10 @@ public class Server {
     }
 
     public Server() {
-        UserDao userDao;
-        AuthDao authDao;
-        GameDao gameDao;
-        try {
-            userDao = new SqlUserDao();
-            authDao = new SqlAuthDao();
-            gameDao = new SqlGameDao();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
         this(
-            userDao,
-            authDao,
-            gameDao
+            new SqlUserDao(),
+            new SqlAuthDao(),
+            new SqlGameDao()
         );
     }
 
