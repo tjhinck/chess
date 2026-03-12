@@ -31,6 +31,15 @@ public class AuthDaoTests {
     }
 
     @Test
+    public void addAndClose()throws DataAccessException{
+        authDao.addAuthData(new AuthData("goodtoken", "username"));
+        authDao = null;
+        authDao = new SqlAuthDao();
+        authDao.addAuthData(new AuthData("othertoken", "myname"));
+        assertNotNull(authDao.getAuthData("goodtoken"));
+    }
+
+    @Test
     public void invalidAuth() throws DataAccessException{
         authDao.addAuthData(new AuthData("goodtoken", "username"));
         assertNull(authDao.getAuthData("nobody"));
@@ -43,7 +52,27 @@ public class AuthDaoTests {
         assertNull(authDao.getAuthData("goodtoken"));
     }
 
+    @Test
+    public void closeAndGet() throws DataAccessException{
+        authDao.addAuthData(new AuthData("goodtoken", "username"));
+        authDao = null;
+        authDao = new SqlAuthDao();
+        AuthData auth = authDao.getAuthData("goodtoken");
+        assertEquals(auth.username(), "username");
+    }
 
+    @Test
+    public void getAuth() throws DataAccessException{
+        authDao.addAuthData(new AuthData("goodtoken", "username"));
+        assertNotNull(authDao.getAuthData("goodtoken"));
+    }
+
+    @Test
+    public void clear() throws DataAccessException {
+        authDao.addAuthData(new AuthData("goodtoken", "username"));
+        authDao.clearData();
+        assertNull(authDao.getAuthData("goodtoken"));
+    }
 
 }
 

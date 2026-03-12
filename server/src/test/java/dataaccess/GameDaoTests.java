@@ -30,11 +30,67 @@ public class GameDaoTests {
     }
 
     @Test
+    public void addAndClose() throws DataAccessException{
+        gameDao.addGame(new GameData(1, "gamer", new ChessGame(), null, null));
+        gameDao = null;
+        gameDao = new SqlGameDao();
+        assertNotNull(gameDao.getGame(1));
+    }
+
+    @Test
     public void updateGame() throws DataAccessException{
         gameDao.addGame(new GameData(1, "gamer", new ChessGame(), null, null));
         gameDao.updateGame(new GameData(1, "gamer", new ChessGame(), "white", "black"));
         GameData game = gameDao.getGame(1);
         assertEquals(game.whiteUsername(), "white");
         assertEquals(game.blackUsername(), "black");
+    }
+
+    @Test
+    public void closeAndUpdate() throws DataAccessException{
+        gameDao.addGame(new GameData(1, "gamer", new ChessGame(), null, null));
+        gameDao = null;
+        gameDao = new SqlGameDao();
+        gameDao.updateGame(new GameData(1, "gamer", new ChessGame(), "white", "black"));
+        GameData game = gameDao.getGame(1);
+        assertEquals(game.whiteUsername(), "white");
+        assertEquals(game.blackUsername(), "black");
+    }
+
+    @Test
+    public void listGames() throws DataAccessException{
+        GameData game = new GameData(1, "gamer", new ChessGame(), null, null);
+        gameDao.addGame(game);
+        assertTrue(gameDao.listGames().contains(game));
+    }
+
+    @Test
+    public void closeAndList() throws DataAccessException {
+        GameData game = new GameData(1, "gamer", new ChessGame(), null, null);
+        gameDao.addGame(game);
+        gameDao = null;
+        gameDao = new SqlGameDao();
+        assertTrue(gameDao.listGames().contains(game));
+    }
+
+    @Test
+    public void invalidGet() throws DataAccessException{
+        gameDao.addGame(new GameData(1, "gamer", new ChessGame(), null, null));
+        assertNull(gameDao.getGame(23));
+    }
+
+    @Test
+    public void closeAndGet() throws DataAccessException{
+        gameDao.addGame(new GameData(1, "gamer", new ChessGame(), null, null));
+        gameDao = null;
+        gameDao = new SqlGameDao();
+        assertEquals(gameDao.getGame(1).gameName(), "gamer");
+    }
+
+    @Test
+    public void clear() throws DataAccessException{
+        gameDao.addGame(new GameData(1, "gamer", new ChessGame(), null, null));
+        gameDao.clearData();
+        assertNull(gameDao.getGame(1));
     }
 }
