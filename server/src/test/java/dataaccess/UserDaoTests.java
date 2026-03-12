@@ -29,8 +29,32 @@ public class UserDaoTests {
     }
 
     @Test
+    public void addAndClose() throws DataAccessException {
+        userDao.addUser(new UserData("user", "hashed", "mail"));
+        userDao = null;
+        userDao = new SqlUserDao();
+        assertNotNull(userDao.getUser("user"));
+    }
+
+    @Test
     public void notFound() throws DataAccessException{
         userDao.addUser(new UserData("user", "hashed", "mail"));
         assertNull(userDao.getUser("nobody"));
+    }
+
+    @Test
+    public void closeAndGet() throws DataAccessException {
+        userDao.addUser(new UserData("user", "hashed", "mail"));
+        userDao = null;
+        userDao = new SqlUserDao();
+        UserData user = userDao.getUser("user");
+        assertEquals(user.email(), "mail");
+    }
+
+    @Test
+    public void clear() throws DataAccessException {
+        userDao.addUser(new UserData("user", "hashed", "mail"));
+        userDao.clearData();
+        assertNull(userDao.getUser("user"));
     }
 }
