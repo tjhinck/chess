@@ -131,7 +131,7 @@ public class StandardAPITests {
     @Order(5)
     @DisplayName("Register Bad Request")
     public void registerBadRequest() {
-        //attempt to register a user without a passwordHash
+        //attempt to register a user without a password
         TestUser registerRequest = new TestUser(newUser.getUsername(), null, newUser.getEmail());
         TestAuthResult registerResult = serverFacade.register(registerRequest);
 

@@ -1,8 +1,8 @@
 package response;
 
-import model.GameData;
+import model.GameDataDto;
 
 import java.util.Collection;
 
-public record ListGamesResponse(Collection<GameData> games) {
+public record ListGamesResponse(Collection<GameDataDto> games) {
 }

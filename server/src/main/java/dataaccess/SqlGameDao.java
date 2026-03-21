@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.GameData;
+import model.GameDataDto;
 import server.Server;
 
 import java.sql.Connection;
@@ -9,7 +10,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class SqlGameDao extends SqlDao implements GameDao{
+public class SqlGameDao extends SqlDao implements GameDao {
 
     public SqlGameDao() {
         try {
@@ -45,14 +46,14 @@ public class SqlGameDao extends SqlDao implements GameDao{
     }
 
     @Override
-    public Collection<GameData> listGames() throws DataAccessException {
-        Collection<GameData> games = new ArrayList<>();
+    public Collection<GameDataDto> listGames() throws DataAccessException {
+        Collection<GameDataDto> games = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection()) {
             var statement = "SELECT gameDataJson FROM games";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
-                        games.add(Server.GSON.fromJson(rs.getString("gameDataJson"), GameData.class));
+                        games.add(Server.GSON.fromJson(rs.getString("gameDataJson"), GameDataDto.class));
                     }
                 }
             }
@@ -75,12 +76,12 @@ public class SqlGameDao extends SqlDao implements GameDao{
         executeUpdate(statement);
     }
 
+    // todo: you can make your tables and queries more efficient
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS  games (
+            CREATE TABLE IF NOT EXISTS games (
               gameID int NOT NULL PRIMARY KEY,
-              gameDataJson JSON NOT NULL,
-              INDEX(gameID)
+              gameDataJson JSON NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };

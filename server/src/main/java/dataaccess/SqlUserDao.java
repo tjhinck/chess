@@ -50,7 +50,7 @@ public class SqlUserDao extends SqlDao implements UserDao{
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS  userData (
+            CREATE TABLE IF NOT EXISTS userData (
               username VARCHAR(64) NOT NULL PRIMARY KEY,
               userDataJson JSON NOT NULL,
               INDEX(username)

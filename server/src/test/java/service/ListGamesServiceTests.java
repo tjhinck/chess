@@ -5,6 +5,7 @@ import dataaccess.DataAccessException;
 import dataaccess.GameDao;
 import dataaccess.MemoryGameDao;
 import model.GameData;
+import model.GameDataDto;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,8 @@ public class ListGamesServiceTests {
         GameData game = new GameData(1, "goodgame", new ChessGame(), null, null);
         gameDao.addGame(game);
         ListGamesResponse listGamesResponse = listGamesService.listGames();
-        assertTrue(listGamesResponse.games().contains(game));
+        GameDataDto gameDataDto = new GameDataDto(1, "goodgame", null, null);
+        assertTrue(listGamesResponse.games().contains(gameDataDto));
     }
 
     @Test

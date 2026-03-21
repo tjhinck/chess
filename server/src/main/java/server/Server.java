@@ -37,6 +37,10 @@ public class Server {
             new SqlUserDao(),
             new SqlAuthDao(),
             new SqlGameDao()
+
+//            new MemoryUserDao(),
+//            new MemoryAuthDao(),
+//            new MemoryGameDao()
         );
     }
 

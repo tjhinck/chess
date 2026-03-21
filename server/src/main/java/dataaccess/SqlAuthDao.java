@@ -56,7 +56,7 @@ public class SqlAuthDao extends SqlDao implements AuthDao {
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS  authRecord (
+            CREATE TABLE IF NOT EXISTS authRecord (
               authToken VARCHAR(128) NOT NULL PRIMARY KEY,
               authDataJson JSON NOT NULL,
               INDEX(authToken)
