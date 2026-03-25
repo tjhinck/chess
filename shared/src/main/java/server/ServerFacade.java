@@ -1,8 +1,10 @@
 package server;
 
 import com.google.gson.Gson;
+import request.CreateGameRequest;
 import request.LoginRequest;
 import request.RegisterRequest;
+import response.CreateGameResponse;
 import response.LoginResponse;
 import response.RegisterResponse;
 import response.ResponseException;
@@ -22,35 +24,44 @@ public class ServerFacade {
     }
 
     public LoginResponse login(LoginRequest loginRequest) throws ResponseException {
-        var request = buildRequest("POST", "/session", loginRequest);
+        var request = buildRequest("POST", "/session", loginRequest, null);
         var response = sendRequest(request);
         return handleResponse(response, LoginResponse.class);
     }
 
     public RegisterResponse register(RegisterRequest registerRequest) throws ResponseException {
-        var request = buildRequest("POST", "/user", registerRequest);
+        var request = buildRequest("POST", "/user", registerRequest, null);
         var response = sendRequest(request);
         return handleResponse(response, RegisterResponse.class);
     }
 
     public void logout(String authToken) throws ResponseException {
-        var request = buildRequest("DELETE", "/session", authToken);
+        var request = buildRequest("DELETE", "/session" ,null, authToken);
         var response = sendRequest(request);
         handleResponse(response, null);
+    }
+
+    public CreateGameResponse create(CreateGameRequest createGameRequest, String authToken) throws ResponseException {
+        var request = buildRequest("POST", "/game", createGameRequest, authToken);
+        var response = sendRequest(request);
+        return handleResponse(response, CreateGameResponse.class);
     }
 
     public void clear() throws ResponseException {
-        var request = buildRequest("DELETE", "/db", null);
+        var request = buildRequest("DELETE", "/db", null, null);
         var response = sendRequest(request);
         handleResponse(response, null);
     }
 
-    private HttpRequest buildRequest(String method, String path, Object body) {
+    private HttpRequest buildRequest(String method, String path, Object body, String auth) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))
                 .method(method, makeRequestBody(body));
         if (body != null) {
             request.setHeader("Content-Type", "application/json");
+        }
+        if (auth != null){
+            request.setHeader("Authorization", auth);
         }
         return request.build();
     }

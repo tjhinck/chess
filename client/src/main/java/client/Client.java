@@ -3,8 +3,10 @@ package client;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import request.CreateGameRequest;
 import request.LoginRequest;
 import request.RegisterRequest;
+import response.CreateGameResponse;
 import response.LoginResponse;
 import response.RegisterResponse;
 import response.ResponseException;
@@ -66,6 +68,7 @@ public class Client {
                 case "login" -> login(params);
                 case "register" -> register(params);
                 case "logout" -> logout();
+                case "create" -> create(params);
                 case "quit" -> "Goodbye!";
                 default -> help();
             };
@@ -93,7 +96,15 @@ public class Client {
     private String logout() throws ResponseException{
         assertSignedIn();
         server.logout(authToken);
+        state = State.SIGNED_OUT;
+        authToken = null;
         return "Until next time...";
+    }
+
+    private String create(String... params) throws ResponseException {
+        CreateGameRequest createGameRequest = new CreateGameRequest(params[0]);
+        CreateGameResponse createGameResponse = server.create(createGameRequest, authToken);
+        return "Created game " + createGameResponse.gameID();
     }
 
     private void printPrompt() {
