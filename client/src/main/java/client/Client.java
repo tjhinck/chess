@@ -6,10 +6,7 @@ import java.util.Scanner;
 import request.CreateGameRequest;
 import request.LoginRequest;
 import request.RegisterRequest;
-import response.CreateGameResponse;
-import response.LoginResponse;
-import response.RegisterResponse;
-import response.ResponseException;
+import response.*;
 import server.ServerFacade;
 
 import static ui.EscapeSequences.*;
@@ -69,8 +66,10 @@ public class Client {
                 case "register" -> register(params);
                 case "logout" -> logout();
                 case "create" -> create(params);
+                case "list" -> list();
+                case "help" -> help();
                 case "quit" -> "Goodbye!";
-                default -> help();
+                default -> "Unknown command";
             };
         } catch (ResponseException ex) {
             return ex.getMessage();
@@ -102,9 +101,17 @@ public class Client {
     }
 
     private String create(String... params) throws ResponseException {
+        assertSignedIn();
         CreateGameRequest createGameRequest = new CreateGameRequest(params[0]);
         CreateGameResponse createGameResponse = server.create(createGameRequest, authToken);
         return "Created game " + createGameResponse.gameID();
+    }
+
+    private String list() throws ResponseException{
+        assertSignedIn();
+        ListGamesResponse listGamesResponse = server.list(authToken);
+        var games = EnumeratedGameList.of(listGamesResponse.games());
+        return games.toString();
     }
 
     private void printPrompt() {

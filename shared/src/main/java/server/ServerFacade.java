@@ -4,10 +4,7 @@ import com.google.gson.Gson;
 import request.CreateGameRequest;
 import request.LoginRequest;
 import request.RegisterRequest;
-import response.CreateGameResponse;
-import response.LoginResponse;
-import response.RegisterResponse;
-import response.ResponseException;
+import response.*;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -45,6 +42,12 @@ public class ServerFacade {
         var request = buildRequest("POST", "/game", createGameRequest, authToken);
         var response = sendRequest(request);
         return handleResponse(response, CreateGameResponse.class);
+    }
+
+    public ListGamesResponse list(String authToken) throws ResponseException {
+        var request = buildRequest("GET", "/game", null, authToken);
+        var response = sendRequest(request);
+        return handleResponse(response, ListGamesResponse.class);
     }
 
     public void clear() throws ResponseException {
