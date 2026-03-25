@@ -1,5 +1,6 @@
 package server;
 
+import exception.ResponseException;
 import request.CreateGameRequest;
 import request.JoinGameRequest;
 import request.RegisterRequest;

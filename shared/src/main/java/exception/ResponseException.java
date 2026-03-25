@@ -1,6 +1,6 @@
-package response;
+package exception;
 
-import server.Server;
+import com.google.gson.Gson;
 import java.util.Map;
 
 public class ResponseException extends Exception {
@@ -27,6 +27,6 @@ public class ResponseException extends Exception {
     }
 
     public String toJson(){
-        return Server.GSON.toJson(Map.of("message", getMessage(), "status", code));
+        return new Gson().toJson(Map.of("message", getMessage(), "status", code));
     }
 }

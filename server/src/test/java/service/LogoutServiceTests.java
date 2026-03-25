@@ -1,6 +1,5 @@
 package service;
 
-import response.ResponseException;
 import dataaccess.AuthDao;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDao;

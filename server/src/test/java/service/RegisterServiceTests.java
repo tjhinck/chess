@@ -2,7 +2,6 @@ package service;
 
 import request.RegisterRequest;
 import response.RegisterResponse;
-import response.ResponseException;
 import dataaccess.*;
 import model.UserData;
 import org.junit.jupiter.api.BeforeAll;

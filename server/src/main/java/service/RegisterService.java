@@ -1,9 +1,9 @@
 package service;
 
+import exception.ResponseException;
 import org.mindrot.jbcrypt.BCrypt;
 import request.RegisterRequest;
 import response.RegisterResponse;
-import response.ResponseException;
 import dataaccess.AuthDao;
 import dataaccess.DataAccessException;
 import dataaccess.UserDao;

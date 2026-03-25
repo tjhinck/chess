@@ -3,7 +3,6 @@ package service;
 import org.mindrot.jbcrypt.BCrypt;
 import request.LoginRequest;
 import response.LoginResponse;
-import response.ResponseException;
 import dataaccess.*;
 import model.UserData;
 import org.junit.jupiter.api.BeforeAll;
