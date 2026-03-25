@@ -1,4 +1,4 @@
-package exception;
+package response;
 
 import com.google.gson.Gson;
 import java.util.Map;

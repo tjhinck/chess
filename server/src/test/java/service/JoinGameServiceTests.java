@@ -2,7 +2,7 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.*;
-import exception.ResponseException;
+import response.ResponseException;
 import model.AuthData;
 import model.GameData;
 import org.junit.jupiter.api.BeforeAll;

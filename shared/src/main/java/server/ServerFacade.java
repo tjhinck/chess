@@ -1,7 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
-import exception.ResponseException;
+import response.ResponseException;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -15,6 +15,10 @@ public class ServerFacade {
 
     public ServerFacade(String url) {
         serverUrl = url;
+    }
+
+    public String login(Reque){
+        var request = buildRequest("POST", "/session", )
     }
 
     private HttpRequest buildRequest(String method, String path, Object body) {
@@ -50,14 +54,11 @@ public class ServerFacade {
             if (body != null) {
                 throw new ResponseException(ResponseException.HttpCode.serverError, GSON.toJson(body));
             }
-
             throw new ResponseException(ResponseException.HttpCode.serverError, "other failure: " + status);
         }
-
         if (responseClass != null) {
             return new Gson().fromJson(response.body(), responseClass);
         }
-
         return null;
     }
 

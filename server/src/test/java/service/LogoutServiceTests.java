@@ -3,7 +3,7 @@ package service;
 import dataaccess.AuthDao;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDao;
-import exception.ResponseException;
+import response.ResponseException;
 import model.AuthData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;

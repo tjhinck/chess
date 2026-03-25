@@ -3,7 +3,7 @@ package client;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import exception.ResponseException;
+import response.ResponseException;
 import server.ServerFacade;
 
 import static ui.EscapeSequences.*;
@@ -38,7 +38,6 @@ public class Client {
                 System.out.print(msg);
             }
         }
-        System.out.println("Goodbye!");
         System.out.println();
     }
 
@@ -48,8 +47,8 @@ public class Client {
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
-                case "signin" -> signIn(params);
-                case "quit" -> "quit";
+                case "login" -> login(params);
+                case "quit" -> "Goodbye!";
                 default -> help();
             };
         } catch (ResponseException ex) {
@@ -57,7 +56,7 @@ public class Client {
         }
     }
 
-    private String signIn(String... params) throws ResponseException{
+    private String login(String... params) throws ResponseException{
         return "Immense failure";
     }
 
@@ -71,8 +70,8 @@ public class Client {
             return """
                     help  -  view command options
                     quit  -  exit the chess application
-                    login <username> <password> -  login with existing account
-                    register <username> <password> <email> -  create a new account
+                    login <username> <password>  -  login with existing account
+                    register <username> <password> <email>  -  create a new account
                     """;
         }
         return """
