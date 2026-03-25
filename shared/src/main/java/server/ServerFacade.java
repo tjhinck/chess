@@ -90,12 +90,12 @@ public class ServerFacade {
         if (!isSuccessful(status)) {
             var body = response.body();
             if (body != null) {
-                throw new ResponseException(ResponseException.HttpCode.serverError, GSON.toJson(body));
+                throw ResponseException.fromJson(body);
             }
-            throw new ResponseException(ResponseException.HttpCode.fromValue(status), "other failure: " + status);
+            throw new ResponseException(ResponseException.HttpCode.fromCode(status), "other failure: " + status);
         }
         if (responseClass != null) {
-            return new Gson().fromJson(response.body(), responseClass);
+            return GSON.fromJson(response.body(), responseClass);
         }
         return null;
     }

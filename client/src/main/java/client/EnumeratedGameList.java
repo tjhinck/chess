@@ -27,11 +27,7 @@ public class EnumeratedGameList {
             GameDataDto game = games.get(i);
             sb.append(i+1);
             sb.append(". ");
-            sb.append(game.gameName());
-            sb.append(" White: ");
-            sb.append(game.whiteUsername());
-            sb.append( "Black: ");
-            sb.append(game.blackUsername());
+            sb.append(game.toString());
             sb.append("\n");
         }
         return sb.toString();

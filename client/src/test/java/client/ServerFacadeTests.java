@@ -3,6 +3,7 @@ package client;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import request.RegisterRequest;
+import response.RegisterResponse;
 import response.ResponseException;
 import server.Server;
 import server.ServerFacade;
@@ -12,18 +13,13 @@ public class ServerFacadeTests {
 
     private static Server server;
     private static ServerFacade facade;
-    private static Client client;
-    private static RegisterRequest registerRequest;
 
     @BeforeAll
     public static void init() {
         server = new Server();
         var port = server.run(0);
-        System.out.println("Started test HTTP server on " + port);
         facade = new ServerFacade("http://localhost:" + port);
-//        client = new Client("http://localhost:" + port);
-        System.out.println("Started server interface");
-        registerRequest = new RegisterRequest("user", "password", "mail");
+        System.out.println("Started test HTTP server on " + port);
     }
 
     @BeforeEach
@@ -37,9 +33,18 @@ public class ServerFacadeTests {
     }
 
 
-//    @Test
-//    public void register() throws ResponseException {
-//        assertDoesNotThrow(facade.register(registerRequest));
-//    }
+    @Test
+    public void register() {
+        RegisterRequest registerRequest = new RegisterRequest("user", "password", "mail");
+        assertDoesNotThrow(() -> facade.register(registerRequest));
+    }
+
+    @Test
+    public void registerUsernameTaken() throws ResponseException {
+        RegisterRequest goodRequest = new RegisterRequest("user", "password", "mail");
+        RegisterRequest badrequest = new RegisterRequest("user", "bigword", "badmail");
+        facade.register(goodRequest);
+        assertThrows(ResponseException.class, () -> facade.register(badrequest));
+    }
 
 }
