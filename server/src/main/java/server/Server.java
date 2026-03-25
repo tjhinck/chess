@@ -1,9 +1,7 @@
 package server;
 
-import response.ResponseException;
-import request.CreateGameRequest;
-import request.JoinGameRequest;
-import request.RegisterRequest;
+import response.*;
+import request.*;
 import dataaccess.*;
 import io.javalin.Javalin;
 import io.javalin.http.Context;

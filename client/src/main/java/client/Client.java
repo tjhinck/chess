@@ -3,6 +3,8 @@ package client;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import request.LoginRequest;
+import response.LoginResponse;
 import response.ResponseException;
 import server.ServerFacade;
 
@@ -57,7 +59,9 @@ public class Client {
     }
 
     private String login(String... params) throws ResponseException{
-        return "Immense failure";
+        LoginRequest loginRequest = new LoginRequest(params[0], params[1]);
+        LoginResponse loginResponse = server.login(loginRequest);
+        return "Hello, " + loginResponse.username();
     }
 
     private void printPrompt() {
