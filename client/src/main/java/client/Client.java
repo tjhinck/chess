@@ -13,12 +13,13 @@ import static ui.EscapeSequences.*;
 
 public class Client {
     private final ServerFacade server;
-    private State state = State.SIGNED_OUT;
+    private State state = State.LOGGED_OUT;
     private String authToken;
+    private EnumeratedGameList games;
 
     private enum State {
-        SIGNED_IN("[Signed In]"),
-        SIGNED_OUT("[Signed Out]");
+        LOGGED_IN("[Logged In]"),
+        LOGGED_OUT("[Logged Out]");
 
         private final String value;
 
@@ -58,6 +59,9 @@ public class Client {
 
     private String eval(String input){
         try {
+            if (input.isBlank()){
+                return "";
+            }
             String[] tokens = input.toLowerCase().split(" ");
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
@@ -67,19 +71,22 @@ public class Client {
                 case "logout" -> logout();
                 case "create" -> create(params);
                 case "list" -> list();
+                case "play" -> play(params);
                 case "help" -> help();
                 case "quit" -> "Goodbye!";
-                default -> "Unknown command";
+                default -> "Enter 'help' to view options";
             };
         } catch (ResponseException ex) {
-            return ex.getMessage();
+            return SET_TEXT_COLOR_RED + ex.getMessage();
+        } catch (ArrayIndexOutOfBoundsException | IllegalArgumentException ex){
+            return SET_TEXT_COLOR_RED + "Invalid input. Enter 'help' to view required format";
         }
     }
 
     private String login(String... params) throws ResponseException{
         LoginRequest loginRequest = new LoginRequest(params[0], params[1]);
         LoginResponse loginResponse = server.login(loginRequest);
-        state = State.SIGNED_IN;
+        state = State.LOGGED_IN;
         authToken = loginResponse.authToken();
         return "Hello, " + loginResponse.username();
     }
@@ -87,7 +94,7 @@ public class Client {
     private String register(String... params) throws ResponseException{
         RegisterRequest registerRequest = new RegisterRequest(params[0], params[1], params[2]);
         RegisterResponse registerResponse = server.register(registerRequest);
-        state = State.SIGNED_IN;
+        state = State.LOGGED_IN;
         authToken = registerResponse.authToken();
         return "Welcome, " + registerResponse.username();
     }
@@ -95,7 +102,7 @@ public class Client {
     private String logout() throws ResponseException{
         assertSignedIn();
         server.logout(authToken);
-        state = State.SIGNED_OUT;
+        state = State.LOGGED_OUT;
         authToken = null;
         return "Until next time...";
     }
@@ -104,23 +111,37 @@ public class Client {
         assertSignedIn();
         CreateGameRequest createGameRequest = new CreateGameRequest(params[0]);
         CreateGameResponse createGameResponse = server.create(createGameRequest, authToken);
+        ListGamesResponse listGamesResponse = server.list(authToken);
+        games = EnumeratedGameList.of(listGamesResponse.games());
         return "Created game " + createGameResponse.gameID();
     }
 
     private String list() throws ResponseException{
         assertSignedIn();
         ListGamesResponse listGamesResponse = server.list(authToken);
-        var games = EnumeratedGameList.of(listGamesResponse.games());
+        games = EnumeratedGameList.of(listGamesResponse.games());
         return games.toString();
     }
 
+    private String play(String... params) throws ResponseException {
+        assertSignedIn();
+        int gameNum = Integer.parseInt(params[0]);
+        if (games == null){
+            ListGamesResponse listGamesResponse = server.list(authToken);
+            games = EnumeratedGameList.of(listGamesResponse.games());
+        }
+
+
+
+    }
+
     private void printPrompt() {
-        System.out.print("\n" + RESET_TEXT_COLOR + state + ">>> " + SET_TEXT_COLOR_GREEN);
+        System.out.print("\n" + RESET_TEXT_COLOR + state + " >>> " + SET_TEXT_COLOR_GREEN);
     }
 
 
     private String help(){
-        if (state == State.SIGNED_OUT){
+        if (state == State.LOGGED_OUT){
             return """
                     help  -  view command options
                     quit  -  exit the chess application
@@ -140,7 +161,7 @@ public class Client {
     }
 
     private void assertSignedIn() throws ResponseException {
-        if (state == State.SIGNED_OUT) {
+        if (state == State.LOGGED_OUT) {
             throw new ResponseException(ResponseException.HttpCode.badRequest, "Please sign in first");
         }
     }
