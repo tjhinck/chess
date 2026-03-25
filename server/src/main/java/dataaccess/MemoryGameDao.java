@@ -1,11 +1,10 @@
 package dataaccess;
 
 import model.GameData;
-import model.GameDataDto;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 public class MemoryGameDao implements GameDao{
     final private HashMap<Integer, GameData> games = new HashMap<>();
@@ -21,10 +20,10 @@ public class MemoryGameDao implements GameDao{
     }
 
     @Override
-    public Collection<GameDataDto> listGames() throws DataAccessException {
-        Collection<GameDataDto> gameList = new ArrayList<>();
+    public List<GameData> listGames() throws DataAccessException {
+        List<GameData> gameList = new ArrayList<>();
         for (GameData game : games.values()) {
-            gameList.add(new GameDataDto(game.gameID(), game.gameName(), game.whiteUsername(), game.blackUsername()));
+            gameList.add(new GameData(game.gameID(), game.gameName(), game.chessGame(), game.whiteUsername(), game.blackUsername()));
         }
         return gameList;
     }

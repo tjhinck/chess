@@ -1,22 +1,17 @@
 package client;
 
-import model.GameDataDto;
+import model.GameData;
 
-import java.util.Collection;
 import java.util.List;
 
 public class EnumeratedGameList {
-    private final List<GameDataDto> games;
+    private final List<GameData> games;
 
-    private EnumeratedGameList(Collection<GameDataDto> games){
-        this.games = games.stream().toList();
+    public EnumeratedGameList(List<GameData> games){
+        this.games = games;
     }
 
-    public static EnumeratedGameList of(Collection<GameDataDto> listGamesResponse){
-        return new EnumeratedGameList(listGamesResponse);
-    }
-
-    public GameDataDto get(int id){
+    public GameData get(int id){
         return games.get(id);
     }
 
@@ -24,7 +19,7 @@ public class EnumeratedGameList {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < games.size(); i++){
-            GameDataDto game = games.get(i);
+            GameData game = games.get(i);
             sb.append(i+1);
             sb.append(". ");
             sb.append(game.toString());

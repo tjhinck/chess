@@ -2,7 +2,7 @@ package dataaccess;
 
 import chess.ChessGame;
 import model.GameData;
-import model.GameDataDto;
+import model.GameData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,8 +62,8 @@ public class GameDaoTests {
     public void listGames() throws DataAccessException{
         GameData game = new GameData(1, "gamer", new ChessGame(), null, null);
         gameDao.addGame(game);
-        GameDataDto gameDataDto = new GameDataDto(1, "gamer", null, null);
-        assertTrue(gameDao.listGames().contains(gameDataDto));
+        GameData GameData = new GameData(1, "gamer", new ChessGame(),null, null);
+        assertTrue(gameDao.listGames().contains(GameData));
     }
 
     @Test
@@ -72,8 +72,8 @@ public class GameDaoTests {
         gameDao.addGame(game);
         gameDao = null;
         gameDao = new SqlGameDao();
-        GameDataDto gameDataDto = new GameDataDto(1, "gamer", null, null);
-        assertTrue(gameDao.listGames().contains(gameDataDto));
+        GameData GameData = new GameData(1, "gamer", new ChessGame(),null, null);
+        assertTrue(gameDao.listGames().contains(GameData));
     }
 
     @Test

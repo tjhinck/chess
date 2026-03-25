@@ -112,14 +112,14 @@ public class Client {
         CreateGameRequest createGameRequest = new CreateGameRequest(params[0]);
         CreateGameResponse createGameResponse = server.create(createGameRequest, authToken);
         ListGamesResponse listGamesResponse = server.list(authToken);
-        games = EnumeratedGameList.of(listGamesResponse.games());
+        games = new EnumeratedGameList(listGamesResponse.games());
         return "Created game " + createGameResponse.gameID();
     }
 
     private String list() throws ResponseException{
         assertSignedIn();
         ListGamesResponse listGamesResponse = server.list(authToken);
-        games = EnumeratedGameList.of(listGamesResponse.games());
+        games = new EnumeratedGameList(listGamesResponse.games());
         return games.toString();
     }
 
@@ -128,11 +128,9 @@ public class Client {
         int gameNum = Integer.parseInt(params[0]);
         if (games == null){
             ListGamesResponse listGamesResponse = server.list(authToken);
-            games = EnumeratedGameList.of(listGamesResponse.games());
+            games = new EnumeratedGameList(listGamesResponse.games());
         }
-
-
-
+        return "fail";
     }
 
     private void printPrompt() {

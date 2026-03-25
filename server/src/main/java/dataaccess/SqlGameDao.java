@@ -1,14 +1,13 @@
 package dataaccess;
 
 import model.GameData;
-import model.GameDataDto;
 import server.Server;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 public class SqlGameDao extends SqlDao implements GameDao {
 
@@ -46,14 +45,14 @@ public class SqlGameDao extends SqlDao implements GameDao {
     }
 
     @Override
-    public Collection<GameDataDto> listGames() throws DataAccessException {
-        Collection<GameDataDto> games = new ArrayList<>();
+    public List<GameData> listGames() throws DataAccessException {
+        List<GameData> games = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection()) {
             var statement = "SELECT gameDataJson FROM games";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
-                        games.add(Server.GSON.fromJson(rs.getString("gameDataJson"), GameDataDto.class));
+                        games.add(Server.GSON.fromJson(rs.getString("gameDataJson"), GameData.class));
                     }
                 }
             }
