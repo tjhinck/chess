@@ -15,6 +15,15 @@ public class ResponseException extends Exception {
         private final int code;
         HttpCode(int code) { this.code = code; }
         public int getCode(){ return code; }
+        // Reverse lookup
+        public static HttpCode fromValue(int value) {
+            for (HttpCode h : values()) {
+                if (h.code == value) {
+                    return h;
+                }
+            }
+            throw new IllegalArgumentException("Unknown value: " + value);
+        }
     }
 
     public ResponseException(HttpCode httpCode, String message) {

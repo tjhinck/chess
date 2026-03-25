@@ -15,10 +15,22 @@ import static ui.EscapeSequences.*;
 public class Client {
     private final ServerFacade server;
     private State state = State.SIGNED_OUT;
+    private String authToken;
 
     private enum State {
-        SIGNED_IN,
-        SIGNED_OUT
+        SIGNED_IN("[Signed In]"),
+        SIGNED_OUT("[Signed Out]");
+
+        private final String value;
+
+        State(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return value;
+        }
     }
 
     public Client(String serverURL){
@@ -26,12 +38,12 @@ public class Client {
     }
 
     public void run(){
-        System.out.println("♕ Welcome to chess" );
+        System.out.println("♕ Welcome to chess");
         System.out.println("Please sign in or register to begin");
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
-        while (!result.equals("quit")) {
+        while (!result.equals("Goodbye!")) {
             printPrompt();
             String line = scanner.nextLine();
             try {
@@ -39,7 +51,7 @@ public class Client {
                 System.out.print(SET_TEXT_COLOR_BLUE + result);
             } catch (Throwable e) {
                 var msg = e.toString();
-                System.out.print(msg);
+                System.out.print(SET_TEXT_COLOR_RED + "Error: " + msg);
             }
         }
         System.out.println();
@@ -53,6 +65,7 @@ public class Client {
             return switch (cmd) {
                 case "login" -> login(params);
                 case "register" -> register(params);
+                case "logout" -> logout();
                 case "quit" -> "Goodbye!";
                 default -> help();
             };
@@ -64,17 +77,27 @@ public class Client {
     private String login(String... params) throws ResponseException{
         LoginRequest loginRequest = new LoginRequest(params[0], params[1]);
         LoginResponse loginResponse = server.login(loginRequest);
+        state = State.SIGNED_IN;
+        authToken = loginResponse.authToken();
         return "Hello, " + loginResponse.username();
     }
 
     private String register(String... params) throws ResponseException{
         RegisterRequest registerRequest = new RegisterRequest(params[0], params[1], params[2]);
         RegisterResponse registerResponse = server.register(registerRequest);
+        state = State.SIGNED_IN;
+        authToken = registerResponse.authToken();
         return "Welcome, " + registerResponse.username();
     }
 
+    private String logout() throws ResponseException{
+        assertSignedIn();
+        server.logout(authToken);
+        return "Until next time...";
+    }
+
     private void printPrompt() {
-        System.out.print("\n" + RESET_TEXT_COLOR  + ">>> " + SET_TEXT_COLOR_GREEN);
+        System.out.print("\n" + RESET_TEXT_COLOR + state + ">>> " + SET_TEXT_COLOR_GREEN);
     }
 
 
@@ -90,11 +113,17 @@ public class Client {
         return """
                 help  -  view command options
                 quit  -  exit the chess application
-                create <name>  -  create new chess game
+                logout  -  logout current user
                 list  -  list current chess games
+                create <name>  -  create new chess game
                 join <ID>  -  join a chess game
                 observe <ID>  -  spectate a chess game
-                logout  -  logout current user
                 """;
+    }
+
+    private void assertSignedIn() throws ResponseException {
+        if (state == State.SIGNED_OUT) {
+            throw new ResponseException(ResponseException.HttpCode.badRequest, "Please sign in first");
+        }
     }
 }
