@@ -4,7 +4,9 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 import request.LoginRequest;
+import request.RegisterRequest;
 import response.LoginResponse;
+import response.RegisterResponse;
 import response.ResponseException;
 import server.ServerFacade;
 
@@ -50,6 +52,7 @@ public class Client {
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
                 case "login" -> login(params);
+                case "register" -> register(params);
                 case "quit" -> "Goodbye!";
                 default -> help();
             };
@@ -62,6 +65,12 @@ public class Client {
         LoginRequest loginRequest = new LoginRequest(params[0], params[1]);
         LoginResponse loginResponse = server.login(loginRequest);
         return "Hello, " + loginResponse.username();
+    }
+
+    private String register(String... params) throws ResponseException{
+        RegisterRequest registerRequest = new RegisterRequest(params[0], params[1], params[2]);
+        RegisterResponse registerResponse = server.register(registerRequest);
+        return "Welcome, " + registerResponse.username();
     }
 
     private void printPrompt() {
