@@ -1,5 +1,6 @@
 package service;
 
+import exception.ResponseException;
 import org.mindrot.jbcrypt.BCrypt;
 import request.LoginRequest;
 import response.LoginResponse;

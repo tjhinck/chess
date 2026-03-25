@@ -1,5 +1,6 @@
 package service;
 
+import exception.ResponseException;
 import request.RegisterRequest;
 import response.RegisterResponse;
 import dataaccess.*;

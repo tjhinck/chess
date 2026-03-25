@@ -22,8 +22,8 @@ public class Client {
     }
 
     public void run(){
-        System.out.println("Welcome to chess. Please sign in to begin");
-        System.out.print(help());
+        System.out.println("♕ Welcome to chess" );
+        System.out.println("Please sign in or register to begin");
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
@@ -57,8 +57,8 @@ public class Client {
         }
     }
 
-    private String signIn(String... params){
-
+    private String signIn(String... params) throws ResponseException{
+        return "Immense failure";
     }
 
     private void printPrompt() {
@@ -69,13 +69,20 @@ public class Client {
     private String help(){
         if (state == State.SIGNED_OUT){
             return """
-                    - signIn <username>
-                    - quit
+                    help  -  view command options
+                    quit  -  exit the chess application
+                    login <username> <password> -  login with existing account
+                    register <username> <password> <email> -  create a new account
                     """;
         }
         return """
-                - list
-                - quit
+                help  -  view command options
+                quit  -  exit the chess application
+                create <name>  -  create new chess game
+                list  -  list current chess games
+                join <ID>  -  join a chess game
+                observe <ID>  -  spectate a chess game
+                logout  -  logout current user
                 """;
     }
 }
