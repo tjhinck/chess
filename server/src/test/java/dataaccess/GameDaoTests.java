@@ -62,8 +62,8 @@ public class GameDaoTests {
     public void listGames() throws DataAccessException{
         GameData game = new GameData(1, "gamer", new ChessGame(), null, null);
         gameDao.addGame(game);
-        GameData GameData = new GameData(1, "gamer", new ChessGame(),null, null);
-        assertTrue(gameDao.listGames().contains(GameData));
+        GameData gameData = new GameData(1, "gamer", new ChessGame(),null, null);
+        assertTrue(gameDao.listGames().contains(gameData));
     }
 
     @Test
@@ -72,8 +72,8 @@ public class GameDaoTests {
         gameDao.addGame(game);
         gameDao = null;
         gameDao = new SqlGameDao();
-        GameData GameData = new GameData(1, "gamer", new ChessGame(),null, null);
-        assertTrue(gameDao.listGames().contains(GameData));
+        GameData gameData = new GameData(1, "gamer", new ChessGame(),null, null);
+        assertTrue(gameDao.listGames().contains(gameData));
     }
 
     @Test
