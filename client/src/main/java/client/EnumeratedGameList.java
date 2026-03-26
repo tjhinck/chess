@@ -12,7 +12,7 @@ public class EnumeratedGameList {
     }
 
     public GameData get(int id){
-        return games.get(id);
+        return games.get(id-1);
     }
 
     @Override

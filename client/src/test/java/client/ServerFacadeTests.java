@@ -1,11 +1,14 @@
 package client;
 
+import chess.ChessGame;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import request.CreateGameRequest;
+import request.JoinGameRequest;
 import request.LoginRequest;
 import request.RegisterRequest;
+import response.CreateGameResponse;
 import response.RegisterResponse;
 import response.ResponseException;
 import server.Server;
@@ -108,4 +111,27 @@ public class ServerFacadeTests {
         assertThrows(ResponseException.class, () -> facade.list("badauth"));
     }
 
+    @Test
+    public void join() throws ResponseException {
+        RegisterRequest registerRequest = new RegisterRequest("user", "password", "mail");
+        RegisterResponse registerResponse = facade.register(registerRequest);
+        CreateGameRequest createGameRequest = new CreateGameRequest("coolgame");
+        CreateGameResponse createGameResponse = facade.create(createGameRequest, registerResponse.authToken());
+        JoinGameRequest joinGameRequest = new JoinGameRequest(createGameResponse.gameID(), ChessGame.TeamColor.WHITE);
+        assertDoesNotThrow(() -> facade.join(joinGameRequest, registerResponse.authToken()));
+    }
+
+    @Test
+    public void joinWhiteTaken() throws ResponseException {
+        RegisterRequest whitePlayer = new RegisterRequest("white", "white", "mail");
+        String whiteAuth = facade.register(whitePlayer).authToken();
+        RegisterRequest latePlayer = new RegisterRequest("user", "password", "mail");
+        String lateAuth = facade.register(latePlayer).authToken();
+        CreateGameRequest createGameRequest = new CreateGameRequest("coolgame");
+        int gameID = facade.create(createGameRequest, whiteAuth).gameID();
+        JoinGameRequest whiteJoin = new JoinGameRequest(gameID, ChessGame.TeamColor.WHITE);
+        facade.join(whiteJoin, whiteAuth);
+        JoinGameRequest lateJoin = new JoinGameRequest(gameID, ChessGame.TeamColor.WHITE);
+        assertThrows(ResponseException.class, () -> facade.join(lateJoin, lateAuth));
+    }
 }
