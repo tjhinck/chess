@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import request.CreateGameRequest;
+import request.JoinGameRequest;
 import request.LoginRequest;
 import request.RegisterRequest;
 import response.*;
@@ -48,6 +49,12 @@ public class ServerFacade {
         var request = buildRequest("GET", "/game", null, authToken);
         var response = sendRequest(request);
         return handleResponse(response, ListGamesResponse.class);
+    }
+
+    public void join(JoinGameRequest joinGameRequest, String authToken) throws ResponseException {
+        var request = buildRequest("PUT", "/game", joinGameRequest, authToken);
+        var response = sendRequest(request);
+        handleResponse(response, null);
     }
 
     public void clear() throws ResponseException {

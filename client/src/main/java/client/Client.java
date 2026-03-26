@@ -6,6 +6,7 @@ import java.util.Scanner;
 import chess.ChessGame;
 import model.GameData;
 import request.CreateGameRequest;
+import request.JoinGameRequest;
 import request.LoginRequest;
 import request.RegisterRequest;
 import response.*;
@@ -74,6 +75,7 @@ public class Client {
                 case "create" -> create(params);
                 case "list" -> list();
                 case "join" -> join(params);
+                case "observe" -> observer(params);
                 case "help" -> help();
                 case "quit" -> "Goodbye!";
                 default -> "Enter 'help' to view options";
@@ -115,7 +117,6 @@ public class Client {
         CreateGameResponse createGameResponse = server.create(createGameRequest, authToken);
         ListGamesResponse listGamesResponse = server.list(authToken);
         games = new EnumeratedGameList(listGamesResponse.games());
-//        return "Created " + games.get(-1).gameName();
         return "Created new game";
     }
 
@@ -141,8 +142,28 @@ public class Client {
         } catch (IndexOutOfBoundsException ex) {
             return "Game " + gameNum + " not found";
         }
-
+        JoinGameRequest joinGameRequest = new JoinGameRequest(selectedGame.gameID(), color);
+        server.join(joinGameRequest, authToken);
         Gameplay gameplay = new Gameplay(selectedGame, Gameplay.Role.PLAYER, color);
+        gameplay.run();
+        return "";
+    }
+
+    private String observer(String... params) throws ResponseException {
+        assertSignedIn();
+        int gameNum = Integer.parseInt(params[0]);
+        if (games == null){
+            ListGamesResponse listGamesResponse = server.list(authToken);
+            games = new EnumeratedGameList(listGamesResponse.games());
+        }
+
+        GameData selectedGame;
+        try{
+            selectedGame = games.get(gameNum);
+        } catch (IndexOutOfBoundsException ex) {
+            return "Game " + gameNum + " not found";
+        }
+        Gameplay gameplay = new Gameplay(selectedGame, Gameplay.Role.OBSERVER, ChessGame.TeamColor.WHITE);
         gameplay.run();
         return "";
     }

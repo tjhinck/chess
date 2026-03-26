@@ -10,6 +10,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.function.Function;
 
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
@@ -34,7 +35,8 @@ public class Gameplay {
     public void run(){
         chessGame = gameData.chessGame();
         System.out.println("Starting " + gameData.gameName());
-        displayBoard();
+        var display = displayBoard().apply(color);
+        display.run();
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
@@ -43,7 +45,7 @@ public class Gameplay {
             String line = scanner.nextLine();
             try {
                 result = eval(line);
-                displayBoard();
+                display.run();
                 System.out.print(SET_TEXT_COLOR_BLUE + result);
             } catch (Throwable e) {
                 var msg = e.toString();
@@ -83,7 +85,14 @@ public class Gameplay {
         System.out.print("\n" + RESET_TEXT_COLOR + " >>> " + SET_TEXT_COLOR_GREEN);
     }
 
-    private void displayBoard(){
+    private Function<TeamColor, Runnable> displayBoard(){
+        return color -> switch (color){
+            case WHITE -> this::displayBoardWhite;
+            case BLACK -> this::displayBoardBlack;
+        };
+    }
+
+    private void displayBoardWhite(){
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         ChessBoard chessBoard = chessGame.getBoard();
         String columns = "    A   B   C  D   E   F  G  H     ";
@@ -94,6 +103,38 @@ public class Gameplay {
         out.println(ANSI_RESET);
 
         for (int row = 8; row > 0; row--){
+            out.print(SET_BG_COLOR_DARK_GREY);
+            out.print(SET_TEXT_COLOR_WHITE);
+            out.print(" " + row + " ");
+            out.print(ANSI_RESET);
+            for (int col = 1; col < 9; col++){
+                out.print(ANSI_RESET);
+                ChessPiece piece = chessBoard.getPiece(row, col);
+                out.print(squareColor(row, col));
+                out.print(pieceChar(piece));
+            }
+            out.print(SET_BG_COLOR_DARK_GREY);
+            out.print(SET_TEXT_COLOR_WHITE);
+            out.print(" " + row + " ");
+            out.println(RESET_BG_COLOR);
+        }
+        out.print(SET_BG_COLOR_DARK_GREY);
+        out.print(SET_TEXT_COLOR_WHITE);
+        out.print(columns);
+        out.println(RESET_BG_COLOR);
+    }
+
+    private void displayBoardBlack() {
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        ChessBoard chessBoard = chessGame.getBoard();
+        String columns = "    H   G   F  E   D   C  B  A     ";
+        out.print(ERASE_SCREEN);
+        out.print(SET_BG_COLOR_DARK_GREY);
+        out.print(SET_TEXT_COLOR_WHITE);
+        out.print(columns);
+        out.println(ANSI_RESET);
+
+        for (int row = 1; row < 9; row++){
             out.print(SET_BG_COLOR_DARK_GREY);
             out.print(SET_TEXT_COLOR_WHITE);
             out.print(" " + row + " ");
@@ -143,7 +184,7 @@ public class Gameplay {
     }
 
     public static void main(String[] args) {
-        Gameplay gameplay = new Gameplay(new GameData(1, "game", new ChessGame(), null, null), Gameplay.Role.PLAYER, TeamColor.WHITE);
+        Gameplay gameplay = new Gameplay(new GameData(1, "game", new ChessGame(), null, null), Gameplay.Role.PLAYER, TeamColor.BLACK);
         gameplay.run();
     }
 }
