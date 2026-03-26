@@ -3,6 +3,8 @@ package client;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import chess.ChessGame;
+import model.GameData;
 import request.CreateGameRequest;
 import request.LoginRequest;
 import request.RegisterRequest;
@@ -71,7 +73,7 @@ public class Client {
                 case "logout" -> logout();
                 case "create" -> create(params);
                 case "list" -> list();
-                case "play" -> play(params);
+                case "join" -> join(params);
                 case "help" -> help();
                 case "quit" -> "Goodbye!";
                 default -> "Enter 'help' to view options";
@@ -113,7 +115,8 @@ public class Client {
         CreateGameResponse createGameResponse = server.create(createGameRequest, authToken);
         ListGamesResponse listGamesResponse = server.list(authToken);
         games = new EnumeratedGameList(listGamesResponse.games());
-        return "Created game " + createGameResponse.gameID();
+//        return "Created " + games.get(-1).gameName();
+        return "Created new game";
     }
 
     private String list() throws ResponseException{
@@ -123,14 +126,25 @@ public class Client {
         return games.toString();
     }
 
-    private String play(String... params) throws ResponseException {
+    private String join(String... params) throws ResponseException {
         assertSignedIn();
         int gameNum = Integer.parseInt(params[0]);
+        ChessGame.TeamColor color = ChessGame.TeamColor.fromValue(params[1]);
         if (games == null){
             ListGamesResponse listGamesResponse = server.list(authToken);
             games = new EnumeratedGameList(listGamesResponse.games());
         }
-        return "fail";
+
+        GameData selectedGame;
+        try{
+            selectedGame = games.get(gameNum);
+        } catch (IndexOutOfBoundsException ex) {
+            return "Game " + gameNum + " not found";
+        }
+
+        Gameplay gameplay = new Gameplay(selectedGame, Gameplay.Role.PLAYER, color);
+        gameplay.run();
+        return "";
     }
 
     private void printPrompt() {
@@ -152,9 +166,9 @@ public class Client {
                 quit  -  exit the chess application
                 logout  -  logout current user
                 list  -  list current chess games
-                create <name>  -  create new chess game
-                join <ID>  -  join a chess game
-                observe <ID>  -  spectate a chess game
+                observe <game number>  -  spectate a chess game
+                create <game name>  -  create new chess game
+                join <game number> [white|black] -  join a chess game
                 """;
     }
 

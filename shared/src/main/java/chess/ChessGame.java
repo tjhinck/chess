@@ -40,8 +40,23 @@ public class ChessGame {
      * Enum identifying the 2 possible teams in a chess game
      */
     public enum TeamColor {
-        WHITE,
-        BLACK
+        WHITE("white"),
+        BLACK("black");
+
+        private final String value;
+
+        TeamColor(String value) {
+            this.value = value;
+        }
+        // Reverse lookup
+        public static TeamColor fromValue(String value) {
+            for (TeamColor color : values()) {
+                if (color.value.equalsIgnoreCase(value)) {
+                    return color;
+                }
+            }
+            throw new IllegalArgumentException("Unknown value: " + value);
+        }
     }
 
     /**

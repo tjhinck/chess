@@ -1,0 +1,149 @@
+package client;
+
+import chess.ChessBoard;
+import chess.ChessGame;
+import chess.ChessPiece;
+import model.GameData;
+import chess.ChessGame.TeamColor;
+
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Scanner;
+
+import static ui.EscapeSequences.*;
+import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
+
+public class Gameplay {
+    GameData gameData;
+    ChessGame chessGame;
+    Role role;
+    TeamColor color;
+
+    public enum Role{
+        PLAYER,
+        OBSERVER
+    }
+
+    public Gameplay(GameData gameData, Role role, TeamColor color) {
+        this.gameData = gameData;
+        this.role = role;
+        this.color = color;
+    }
+
+    public void run(){
+        chessGame = gameData.chessGame();
+        System.out.println("Starting " + gameData.gameName());
+        displayBoard();
+
+        Scanner scanner = new Scanner(System.in);
+        var result = "";
+        while (!result.equals("Thanks for playing")) {
+            printPrompt();
+            String line = scanner.nextLine();
+            try {
+                result = eval(line);
+                displayBoard();
+                System.out.print(SET_TEXT_COLOR_BLUE + result);
+            } catch (Throwable e) {
+                var msg = e.toString();
+                System.out.print(SET_TEXT_COLOR_RED + "Error: " + msg);
+            }
+        }
+        System.out.println();
+    }
+
+    private String help(){
+        return """
+                help  -  view command options
+                quit  -  exit the chess application
+                (Gameplay coming soon...)
+                """;
+        }
+
+    private String eval(String input){
+        try {
+            if (input.isBlank()){
+                return "";
+            }
+            String[] tokens = input.toLowerCase().split(" ");
+            String cmd = (tokens.length > 0) ? tokens[0] : "help";
+            String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
+            return switch (cmd) {
+                case "help" -> help();
+                case "quit" -> "Thanks for playing";
+                default -> "Enter 'help' to view options";
+            };
+        } catch (Exception ex) {
+            return SET_TEXT_COLOR_RED + ex.getMessage();
+        }
+    }
+
+    private void printPrompt() {
+        System.out.print("\n" + RESET_TEXT_COLOR + " >>> " + SET_TEXT_COLOR_GREEN);
+    }
+
+    private void displayBoard(){
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        ChessBoard chessBoard = chessGame.getBoard();
+        String columns = "    A   B   C  D   E   F  G  H     ";
+        out.print(ERASE_SCREEN);
+        out.print(SET_BG_COLOR_DARK_GREY);
+        out.print(SET_TEXT_COLOR_WHITE);
+        out.print(columns);
+        out.println(ANSI_RESET);
+
+        for (int row = 8; row > 0; row--){
+            out.print(SET_BG_COLOR_DARK_GREY);
+            out.print(SET_TEXT_COLOR_WHITE);
+            out.print(" " + row + " ");
+            out.print(ANSI_RESET);
+            for (int col = 1; col < 9; col++){
+                out.print(ANSI_RESET);
+                ChessPiece piece = chessBoard.getPiece(row, col);
+                out.print(squareColor(row, col));
+                out.print(pieceChar(piece));
+            }
+            out.print(SET_BG_COLOR_DARK_GREY);
+            out.print(SET_TEXT_COLOR_WHITE);
+            out.print(" " + row + " ");
+            out.println(RESET_BG_COLOR);
+        }
+        out.print(SET_BG_COLOR_DARK_GREY);
+        out.print(SET_TEXT_COLOR_WHITE);
+        out.print(columns);
+        out.println(RESET_BG_COLOR);
+    }
+
+    private String squareColor(int row, int col){
+        if ((row + col) % 2 == 0){
+            return ANSI_BLACK_SQUARE;
+        }
+        return ANSI_WHITE_SQUARE;
+    }
+
+    private String pieceChar(ChessPiece piece) {
+        if (piece == null) {
+            return EMPTY;
+        } else {
+            String color = switch (piece.getTeamColor()) {
+                case WHITE -> SET_TEXT_COLOR_WHITE;
+                case BLACK -> SET_TEXT_COLOR_BLACK;
+            };
+            String pieceChar = switch (piece.getPieceType()) {
+                case KING -> BLACK_KING;
+                case QUEEN -> BLACK_QUEEN;
+                case BISHOP -> BLACK_BISHOP;
+                case KNIGHT -> BLACK_KNIGHT;
+                case ROOK -> BLACK_ROOK;
+                case PAWN -> BLACK_PAWN;
+            };
+            return color + pieceChar;
+        }
+    }
+
+    public static void main(String[] args) {
+        Gameplay gameplay = new Gameplay(new GameData(1, "game", new ChessGame(), null, null), Gameplay.Role.PLAYER, TeamColor.WHITE);
+        gameplay.run();
+    }
+}
