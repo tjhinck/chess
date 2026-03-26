@@ -12,7 +12,6 @@ import response.CreateGameResponse;
 import response.RegisterResponse;
 import response.ResponseException;
 import server.Server;
-import server.ServerFacade;
 
 
 public class ServerFacadeTests {

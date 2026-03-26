@@ -10,7 +10,6 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Scanner;
-import java.util.function.Function;
 
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
@@ -91,16 +90,25 @@ public class Gameplay {
         int rowStart;
         int rowEnd;
         int rowInc;
+        int colStart;
+        int colEnd;
+        int colInc;
         if (color == TeamColor.BLACK){
             columns = "    H   G   F  E   D   C  B  A     ";
             rowStart = 1;
             rowEnd = 9;
             rowInc = 1;
+            colStart = 8;
+            colEnd = 0;
+            colInc = -1;
         } else {
             columns = "    A   B   C  D   E   F  G  H     ";
             rowStart = 8;
             rowEnd = 0;
             rowInc = -1;
+            colStart = 1;
+            colEnd = 9;
+            colInc = 1;
         }
 
         out.print(ERASE_SCREEN);
@@ -114,7 +122,7 @@ public class Gameplay {
             out.print(SET_TEXT_COLOR_WHITE);
             out.print(" " + row + " ");
             out.print(ANSI_RESET);
-            for (int col = 1; col < 9; col++){
+            for (int col = colStart; col != colEnd; col += colInc){
                 out.print(ANSI_RESET);
                 ChessPiece piece = chessBoard.getPiece(row, col);
                 out.print(squareColor(row, col));

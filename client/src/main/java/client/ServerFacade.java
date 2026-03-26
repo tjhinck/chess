@@ -1,10 +1,7 @@
-package server;
+package client;
 
 import com.google.gson.Gson;
-import request.CreateGameRequest;
-import request.JoinGameRequest;
-import request.LoginRequest;
-import request.RegisterRequest;
+import request.*;
 import response.*;
 
 import java.net.URI;
@@ -88,7 +85,7 @@ public class ServerFacade {
         try {
             return client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (Exception ex) {
-            throw new ResponseException(ResponseException.HttpCode.serverError, ex.getMessage());
+            throw new ResponseException(ResponseException.HttpCode.serverError, "Server Error");
         }
     }
 

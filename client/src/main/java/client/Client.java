@@ -5,12 +5,8 @@ import java.util.Scanner;
 
 import chess.ChessGame;
 import model.GameData;
-import request.CreateGameRequest;
-import request.JoinGameRequest;
-import request.LoginRequest;
-import request.RegisterRequest;
+import request.*;
 import response.*;
-import server.ServerFacade;
 
 import static ui.EscapeSequences.*;
 
@@ -53,8 +49,7 @@ public class Client {
                 result = eval(line);
                 System.out.print(SET_TEXT_COLOR_BLUE + result);
             } catch (Throwable e) {
-                var msg = e.toString();
-                System.out.print(SET_TEXT_COLOR_RED + "Error: " + msg);
+                System.out.print(SET_TEXT_COLOR_RED + "Error: Something went wrong...");
             }
         }
         System.out.println();
@@ -177,7 +172,7 @@ public class Client {
         if (state == State.LOGGED_OUT){
             return """
                     help  -  view command options
-                    quit  -  exit the chess application
+                    quit  -  exit game
                     login <username> <password>  -  login with existing account
                     register <username> <password> <email>  -  create a new account
                     """;
