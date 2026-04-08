@@ -3,15 +3,20 @@ package client;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import websocket.WsFacade;
+import websocket.WsMessageHandler;
 import chess.ChessGame;
 import model.GameData;
 import request.*;
 import response.*;
+import ui.EnumeratedGameList;
+import websocket.messages.ServerMessage;
 
 import static ui.EscapeSequences.*;
 
-public class Client {
+public class Client implements WsMessageHandler{
     private final ServerFacade server;
+    private final WsFacade ws;
     private State state = State.LOGGED_OUT;
     private String authToken;
     private EnumeratedGameList games;
@@ -32,8 +37,9 @@ public class Client {
         }
     }
 
-    public Client(String serverURL){
+    public Client(String serverURL) throws ResponseException {
         server = new ServerFacade(serverURL);
+        ws = new WsFacade(serverURL, this);
     }
 
     public void run(){
@@ -53,6 +59,12 @@ public class Client {
             }
         }
         System.out.println();
+    }
+
+    public void notify(ServerMessage message){
+        System.out.print(SET_TEXT_COLOR_RED);
+        System.out.println(message);
+        printPrompt();
     }
 
     private String eval(String input){

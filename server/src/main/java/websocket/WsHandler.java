@@ -1,4 +1,4 @@
-package Websocket;
+package websocket;
 
 public class WsHandler {
 }

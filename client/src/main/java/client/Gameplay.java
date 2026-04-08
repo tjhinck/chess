@@ -33,33 +33,38 @@ public class Gameplay {
 
     public void run(){
         chessGame = gameData.chessGame();
-        System.out.println("Starting " + gameData.gameName());
+        System.out.print("Starting ");
+        System.out.println(gameData.gameName());
         displayBoard();
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
-        while (!result.equals("Thanks for playing")) {
+        while (!result.equals(goodbye)) {
             printPrompt();
             String line = scanner.nextLine();
             try {
                 result = eval(line);
-                displayBoard();
-                System.out.print(SET_TEXT_COLOR_BLUE + result);
+//                displayBoard();
+                System.out.print(SET_TEXT_COLOR_BLUE);
+                System.out.print(result);
             } catch (Throwable e) {
                 var msg = e.toString();
-                System.out.print(SET_TEXT_COLOR_RED + "Error: " + msg);
+                System.out.print(SET_TEXT_COLOR_RED);
+                System.out.print("Error: ");
+                System.out.print(msg);
             }
         }
         System.out.println();
     }
 
-    private String help(){
-        return """
+    private String help = """
                 help  -  view command options
-                quit  -  exit the chess application
-                (Gameplay coming soon...)
+                leave  -  leave current game
+                redraw  -  redraw the board
                 """;
-        }
+
+    private String goodbye = "Thanks for playing";
+
 
     private String eval(String input){
         try {
@@ -70,8 +75,9 @@ public class Gameplay {
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
-                case "help" -> help();
-                case "quit" -> "Thanks for playing";
+                case "help" -> help;
+                case "leave" -> goodbye;
+                case "redraw" -> redraw();
                 default -> "Enter 'help' to view options";
             };
         } catch (Exception ex) {
@@ -81,6 +87,11 @@ public class Gameplay {
 
     private void printPrompt() {
         System.out.print("\n" + RESET_TEXT_COLOR + " >>> " + SET_TEXT_COLOR_GREEN);
+    }
+
+    private String redraw(){
+        displayBoard();
+        return "";
     }
 
     private void displayBoard(){
