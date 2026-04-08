@@ -5,6 +5,10 @@ import chess.ChessGame;
 import chess.ChessPiece;
 import model.GameData;
 import chess.ChessGame.TeamColor;
+import response.ResponseException;
+import websocket.WsFacade;
+import websocket.WsMessageHandler;
+import websocket.messages.ServerMessage;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -14,7 +18,8 @@ import java.util.Scanner;
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
 
-public class Gameplay {
+public class Gameplay implements WsMessageHandler {
+    private final WsFacade ws;
     GameData gameData;
     ChessGame chessGame;
     Role role;
@@ -25,7 +30,8 @@ public class Gameplay {
         OBSERVER
     }
 
-    public Gameplay(GameData gameData, Role role, TeamColor color) {
+    public Gameplay(String serverURL, GameData gameData, Role role, TeamColor color) throws ResponseException {
+        ws = new WsFacade(serverURL, this);
         this.gameData = gameData;
         this.role = role;
         this.color = color;
@@ -55,6 +61,26 @@ public class Gameplay {
             }
         }
         System.out.println();
+    }
+
+    @Override
+    public void notify(ServerMessage message){
+        switch (message.getServerMessageType()){
+            case NOTIFICATION -> displayNotification();
+        }
+    }
+
+
+    private void displayNotification(){
+
+    }
+
+    private void displayError(){
+
+    }
+
+    private void loadGame(){
+
     }
 
     private String help = """
@@ -177,8 +203,9 @@ public class Gameplay {
         }
     }
 
-    public static void main(String[] args) {
-        Gameplay gameplay = new Gameplay(new GameData(1, "game", new ChessGame(), null, null), Gameplay.Role.PLAYER, TeamColor.WHITE);
+    public static void main(String[] args) throws ResponseException {
+        String serverUrl = "http://localhost:8080";
+        Gameplay gameplay = new Gameplay(serverUrl, new GameData(1, "game", new ChessGame(), null, null), Gameplay.Role.PLAYER, TeamColor.WHITE);
         gameplay.run();
     }
 }

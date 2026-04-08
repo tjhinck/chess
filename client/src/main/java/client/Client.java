@@ -4,19 +4,17 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 import websocket.WsFacade;
-import websocket.WsMessageHandler;
 import chess.ChessGame;
 import model.GameData;
 import request.*;
 import response.*;
 import ui.EnumeratedGameList;
-import websocket.messages.ServerMessage;
 
 import static ui.EscapeSequences.*;
 
-public class Client implements WsMessageHandler{
+public class Client{
+    private final String serverURL;
     private final ServerFacade server;
-    private final WsFacade ws;
     private State state = State.LOGGED_OUT;
     private String authToken;
     private EnumeratedGameList games;
@@ -37,9 +35,9 @@ public class Client implements WsMessageHandler{
         }
     }
 
-    public Client(String serverURL) throws ResponseException {
-        server = new ServerFacade(serverURL);
-        ws = new WsFacade(serverURL, this);
+    public Client(String serverURL){
+        this.serverURL = serverURL;
+        server = new ServerFacade(this.serverURL);
     }
 
     public void run(){
@@ -59,12 +57,6 @@ public class Client implements WsMessageHandler{
             }
         }
         System.out.println();
-    }
-
-    public void notify(ServerMessage message){
-        System.out.print(SET_TEXT_COLOR_RED);
-        System.out.println(message);
-        printPrompt();
     }
 
     private String eval(String input){
@@ -151,7 +143,7 @@ public class Client implements WsMessageHandler{
         }
         JoinGameRequest joinGameRequest = new JoinGameRequest(selectedGame.gameID(), color);
         server.join(joinGameRequest, authToken);
-        Gameplay gameplay = new Gameplay(selectedGame, Gameplay.Role.PLAYER, color);
+        Gameplay gameplay = new Gameplay(serverURL, selectedGame, Gameplay.Role.PLAYER, color);
         gameplay.run();
         return "";
     }
@@ -170,7 +162,7 @@ public class Client implements WsMessageHandler{
         } catch (IndexOutOfBoundsException ex) {
             return "Game " + gameNum + " not found";
         }
-        Gameplay gameplay = new Gameplay(selectedGame, Gameplay.Role.OBSERVER, ChessGame.TeamColor.WHITE);
+        Gameplay gameplay = new Gameplay(serverURL, selectedGame, Gameplay.Role.OBSERVER, ChessGame.TeamColor.WHITE);
         gameplay.run();
         return "";
     }
