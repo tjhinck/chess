@@ -9,6 +9,7 @@ import io.javalin.security.RouteRole;
 import com.google.gson.Gson;
 import request.LoginRequest;
 import service.*;
+import websocket.WsHandler;
 
 import java.util.Map;
 
@@ -16,6 +17,7 @@ public class Server {
 
     public static final Gson GSON = new Gson();
     private final Javalin javalin;
+    private final WsHandler wsHandler;
     private final AuthenticationService authenticationService;
     private final LoginService loginService;
     private final RegisterService registerService;
@@ -43,6 +45,7 @@ public class Server {
     }
 
     public Server(UserDao userDao, AuthDao authDao, GameDao gameDao) {
+        wsHandler = new WsHandler();
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
             .post("/user", this::register, Permission.PUBLIC)
             .post("/session", this::login, Permission.PUBLIC)
@@ -53,7 +56,12 @@ public class Server {
             .put("/game", this::joinGame, Permission.AUTHENTICATED)
             .beforeMatched(this::checkPermission)
             .exception(ResponseException.class, this::responseExceptionHandler)
-            .exception(Exception.class, this::serverErrorHandler);
+            .exception(Exception.class, this::serverErrorHandler)
+            .ws("/ws", ws -> {
+                ws.onConnect(wsHandler);
+                ws.onMessage(wsHandler);
+                ws.onClose(wsHandler);
+            });
 
         authenticationService = new AuthenticationService(authDao);
         registerService = new RegisterService(userDao, authDao);
