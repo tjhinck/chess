@@ -98,10 +98,10 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
     private void leaveGame(Session session, String username, Integer gameID) throws IOException, DataAccessException {
         connections.removeSession(gameID, session);
         GameData gameData = gameDao.getGame(gameID);
-        if (gameData.whiteUsername().equals(username)) {
+        if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(username)) {
             GameData updatedGame = new GameData(gameData.gameID(), gameData.gameName(), gameData.chessGame(), null, gameData.blackUsername());
             gameDao.updateGame(updatedGame);
-        } else if (gameData.blackUsername().equals(username)){
+        } else if (gameData.blackUsername() != null && gameData.blackUsername().equals(username)) {
             GameData updatedGame = new GameData(gameData.gameID(), gameData.gameName(), gameData.chessGame(), gameData.whiteUsername(), null);
             gameDao.updateGame(updatedGame);
         }
