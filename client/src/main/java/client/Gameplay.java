@@ -29,7 +29,7 @@ public class Gameplay implements WsMessageHandler {
 
 
     public Gameplay(String serverURL, String authToken, GameData gameData, GameRole role, TeamColor color) throws ResponseException {
-        ws = new WsFacade(serverURL, this, role, color);
+        ws = new WsFacade(serverURL, this);
         this.authToken = authToken;
         this.gameData = gameData;
         this.role = role;
@@ -37,10 +37,9 @@ public class Gameplay implements WsMessageHandler {
     }
 
     public void run() throws ResponseException {
-        ws.connect(authToken, gameData.gameID());
         System.out.print("Starting ");
         System.out.println(gameData.gameName());
-        displayBoard();
+        ws.connect(authToken, gameData.gameID());
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
@@ -65,8 +64,8 @@ public class Gameplay implements WsMessageHandler {
     @Override
     public void notify(ServerMessage message){
         switch (message.getServerMessageType()){
-            case NOTIFICATION -> displayNotification();
-            case ERROR -> displayError();
+            case NOTIFICATION -> displayNotification(message.getMessage());
+            case ERROR -> displayError(message.getErrorMessage());
             case LOAD_GAME -> loadGame(message.getGame());
         }
     }
@@ -76,12 +75,13 @@ public class Gameplay implements WsMessageHandler {
 
     }
 
-    private void displayError(){
+    private void displayError(String errorMessage){
 
     }
 
     private void loadGame(ChessGame chessGame){
         this.chessGame = chessGame;
+        displayBoard();
     }
 
     private String help = """
@@ -103,7 +103,7 @@ public class Gameplay implements WsMessageHandler {
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
                 case "help" -> help;
-                case "leave" -> goodbye;
+                case "leave" -> leave();
                 case "redraw" -> redraw();
                 default -> "Enter 'help' to view options";
             };
@@ -114,6 +114,11 @@ public class Gameplay implements WsMessageHandler {
 
     private void printPrompt() {
         System.out.print("\n" + RESET_TEXT_COLOR + " >>> " + SET_TEXT_COLOR_GREEN);
+    }
+
+    private String leave() throws ResponseException {
+        ws.disconnect(authToken, gameData.gameID());
+        return goodbye;
     }
 
     private String redraw(){

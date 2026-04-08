@@ -16,14 +16,10 @@ public class WsFacade extends Endpoint {
     public static final Gson GSON = new Gson();
     Session session;
     WsMessageHandler messageHandler;
-    private final GameRole role;
-    private final TeamColor color;
 
-    public WsFacade(String url, WsMessageHandler messageHandler, GameRole role, TeamColor color) throws ResponseException {
+    public WsFacade(String url, WsMessageHandler messageHandler) throws ResponseException {
         try {
             this.messageHandler = messageHandler;
-            this.role = role;
-            this.color = color;
 
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/ws");
@@ -48,6 +44,15 @@ public class WsFacade extends Endpoint {
     public void connect(String authToken, int gameID) throws ResponseException {
         try {
             var command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+            this.session.getBasicRemote().sendText(GSON.toJson(command));
+        } catch (IOException ex) {
+            throw new ResponseException(ResponseException.HttpCode.serverError, ex.getMessage());
+        }
+    }
+
+    public void disconnect(String authToken, int gameID) throws ResponseException {
+        try{
+            var command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
             this.session.getBasicRemote().sendText(GSON.toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(ResponseException.HttpCode.serverError, ex.getMessage());

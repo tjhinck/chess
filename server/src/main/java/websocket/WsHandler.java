@@ -52,7 +52,7 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, command.getGameID());
 //                case MAKE_MOVE -> makeMove(session, username, (MakeMoveCommand) command);
-//                case LEAVE -> leaveGame(session, username, (LeaveGameCommand) command);
+                case LEAVE -> leaveGame(session, username, command.getGameID());
 //                case RESIGN -> resign(session, username, (ResignCommand) command);
             }
         } catch (IOException | DataAccessException ex) {
@@ -93,5 +93,21 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
         ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
         loadGameMessage.setChessGame(game);
         session.getRemote().sendString(loadGameMessage.toString());
+    }
+
+    private void leaveGame(Session session, String username, Integer gameID) throws IOException, DataAccessException {
+        connections.removeSession(gameID, session);
+        GameData gameData = gameDao.getGame(gameID);
+        if (gameData.whiteUsername().equals(username)) {
+            GameData updatedGame = new GameData(gameData.gameID(), gameData.gameName(), gameData.chessGame(), null, gameData.blackUsername());
+            gameDao.updateGame(updatedGame);
+        } else if (gameData.blackUsername().equals(username)){
+            GameData updatedGame = new GameData(gameData.gameID(), gameData.gameName(), gameData.chessGame(), gameData.whiteUsername(), null);
+            gameDao.updateGame(updatedGame);
+        }
+        ServerMessage broadcastMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        String message = username + " has left";
+        broadcastMessage.setMessage(message);
+        connections.broadcast(gameID, session, broadcastMessage);
     }
 }
