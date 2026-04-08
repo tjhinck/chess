@@ -45,7 +45,7 @@ public class Server {
     }
 
     public Server(UserDao userDao, AuthDao authDao, GameDao gameDao) {
-        wsHandler = new WsHandler();
+        wsHandler = new WsHandler(authDao, gameDao);
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
             .post("/user", this::register, Permission.PUBLIC)
             .post("/session", this::login, Permission.PUBLIC)

@@ -3,6 +3,7 @@ package client;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
+import chess.GameRole;
 import model.GameData;
 import chess.ChessGame.TeamColor;
 import response.ResponseException;
@@ -23,15 +24,11 @@ public class Gameplay implements WsMessageHandler {
     private final String authToken;
     GameData gameData;
     ChessGame chessGame;
-    Role role;
+    GameRole role;
     TeamColor color;
 
-    public enum Role{
-        PLAYER,
-        OBSERVER
-    }
 
-    public Gameplay(String serverURL, String authToken, GameData gameData, Role role, TeamColor color) throws ResponseException {
+    public Gameplay(String serverURL, String authToken, GameData gameData, GameRole role, TeamColor color) throws ResponseException {
         ws = new WsFacade(serverURL, this);
         this.authToken = authToken;
         this.gameData = gameData;
@@ -206,9 +203,9 @@ public class Gameplay implements WsMessageHandler {
         }
     }
 
-    public static void main(String[] args) throws ResponseException {
-        String serverUrl = "http://localhost:8080";
-        Gameplay gameplay = new Gameplay(serverUrl, new GameData(1, "game", new ChessGame(), null, null), Gameplay.Role.PLAYER, TeamColor.WHITE);
-        gameplay.run();
-    }
+//    public static void main(String[] args) throws ResponseException {
+//        String serverUrl = "http://localhost:8080";
+//        Gameplay gameplay = new Gameplay(serverUrl, new GameData(1, "game", new ChessGame(), null, null), Gameplay.Role.PLAYER, TeamColor.WHITE);
+//        gameplay.run();
+//    }
 }

@@ -44,7 +44,7 @@ public class WsFacade extends Endpoint {
             var command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
             this.session.getBasicRemote().sendText(GSON.toJson(command));
         } catch (IOException ex) {
-            throw new ResponseException(ResponseException.HttpCode.badRequest, ex.getMessage());
+            throw new ResponseException(ResponseException.HttpCode.serverError, ex.getMessage());
         }
     }
 
