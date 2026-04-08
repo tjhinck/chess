@@ -29,7 +29,7 @@ public class Gameplay implements WsMessageHandler {
 
 
     public Gameplay(String serverURL, String authToken, GameData gameData, GameRole role, TeamColor color) throws ResponseException {
-        ws = new WsFacade(serverURL, this);
+        ws = new WsFacade(serverURL, this, role, color);
         this.authToken = authToken;
         this.gameData = gameData;
         this.role = role;

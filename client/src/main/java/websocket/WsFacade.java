@@ -1,5 +1,7 @@
 package websocket;
 
+import chess.ChessGame.TeamColor;
+import chess.GameRole;
 import com.google.gson.Gson;
 import jakarta.websocket.*;
 import response.ResponseException;
@@ -14,13 +16,17 @@ public class WsFacade extends Endpoint {
     public static final Gson GSON = new Gson();
     Session session;
     WsMessageHandler messageHandler;
+    private final GameRole role;
+    private final TeamColor color;
 
-    public WsFacade(String url, WsMessageHandler messageHandler) throws ResponseException {
+    public WsFacade(String url, WsMessageHandler messageHandler, GameRole role, TeamColor color) throws ResponseException {
         try {
+            this.messageHandler = messageHandler;
+            this.role = role;
+            this.color = color;
+
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/ws");
-            this.messageHandler = messageHandler;
-
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
 
