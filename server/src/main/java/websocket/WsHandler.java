@@ -1,5 +1,6 @@
 package websocket;
 
+import chess.ChessGame;
 import chess.GameRole;
 import dataaccess.AuthDao;
 import dataaccess.DataAccessException;
@@ -57,8 +58,10 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
 
     private void connect(Session session, String username, Integer gameID) throws DataAccessException, IOException {
         connections.addSession(gameID, session);
-        ServerMessage broadcastMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         GameData gameData = gameDao.getGame(gameID);
+        loadGame(session, gameData.chessGame());
+
+        ServerMessage broadcastMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         String message;
         if (gameData.whiteUsername().equals(username)) {
             message = username + " has joined as white";
@@ -69,5 +72,11 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
         }
         broadcastMessage.setMessage(message);
         connections.broadcast(gameID, session, broadcastMessage);
+    }
+
+    private void loadGame(Session session, ChessGame game) throws IOException {
+        ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
+        loadGameMessage.setChessGame(game);
+        session.getRemote().sendString(loadGameMessage.toString());
     }
 }

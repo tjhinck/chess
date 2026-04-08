@@ -38,7 +38,6 @@ public class Gameplay implements WsMessageHandler {
 
     public void run() throws ResponseException {
         ws.connect(authToken, gameData.gameID());
-        chessGame = gameData.chessGame();
         System.out.print("Starting ");
         System.out.println(gameData.gameName());
         displayBoard();
@@ -67,6 +66,8 @@ public class Gameplay implements WsMessageHandler {
     public void notify(ServerMessage message){
         switch (message.getServerMessageType()){
             case NOTIFICATION -> displayNotification();
+            case ERROR -> displayError();
+            case LOAD_GAME -> loadGame(message.getGame());
         }
     }
 
@@ -79,8 +80,8 @@ public class Gameplay implements WsMessageHandler {
 
     }
 
-    private void loadGame(){
-
+    private void loadGame(ChessGame chessGame){
+        this.chessGame = chessGame;
     }
 
     private String help = """

@@ -1,8 +1,5 @@
 package websocket.commands;
 
-import chess.ChessGame.TeamColor;
-import chess.GameRole;
-
 import java.util.Objects;
 
 /**
