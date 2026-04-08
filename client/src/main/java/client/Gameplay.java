@@ -71,12 +71,14 @@ public class Gameplay implements WsMessageHandler {
     }
 
 
-    private void displayNotification(){
-
+    private void displayNotification(String message){
+        System.out.print(SET_BG_COLOR_YELLOW);
+        System.out.println(message);
     }
 
     private void displayError(String errorMessage){
-
+        System.out.print(SET_TEXT_COLOR_RED);
+        System.out.println(errorMessage);
     }
 
     private void loadGame(ChessGame chessGame){
