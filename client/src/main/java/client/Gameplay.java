@@ -1,9 +1,6 @@
 package client;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.GameRole;
+import chess.*;
 import model.GameData;
 import chess.ChessGame.TeamColor;
 import response.ResponseException;
@@ -90,6 +87,7 @@ public class Gameplay implements WsMessageHandler {
                 help  -  view command options
                 leave  -  leave current game
                 redraw  -  redraw the board
+                move <start> <end> <promotion> -  make move ex: move e2 e4 or move a7 a8 queen
                 """;
 
     private String goodbye = "Thanks for playing";
@@ -107,15 +105,58 @@ public class Gameplay implements WsMessageHandler {
                 case "help" -> help;
                 case "leave" -> leave();
                 case "redraw" -> redraw();
+                case "move" -> move(params);
                 default -> "Enter 'help' to view options";
             };
-        } catch (Exception ex) {
+        } catch (ResponseException ex) {
             return SET_TEXT_COLOR_RED + ex.getMessage();
+        } catch (IllegalArgumentException ex) {
+            return SET_TEXT_COLOR_RED + ex.getMessage();
+        } catch (ArrayIndexOutOfBoundsException ex){
+            return SET_TEXT_COLOR_RED + "Invalid input. Enter 'help' to view required format";
         }
     }
 
     private void printPrompt() {
         System.out.print("\n" + RESET_TEXT_COLOR + " >>> " + SET_TEXT_COLOR_GREEN);
+    }
+
+    private ChessPosition positionParser(String positionStr){
+        if (positionStr == null || positionStr.length() < 2) {
+            throw new IllegalArgumentException("Invalid Move");
+        }
+        char file = positionStr.toLowerCase().charAt(0);
+        char rank = positionStr.charAt(1);
+        int col = file - 'a';
+        int row = rank - '1';
+        return new ChessPosition(row, col);
+    }
+
+    private ChessPiece.PieceType promotionPieceParser(String input){
+        if (input == null || input.isEmpty()) {
+            return null;
+        }
+        String promotionPieceStr = input.toUpperCase().trim();
+        try {
+            return ChessPiece.PieceType.valueOf(promotionPieceStr);
+        } catch (IllegalArgumentException e) {
+            return switch (promotionPieceStr) {
+                case "Q" -> ChessPiece.PieceType.QUEEN;
+                case "N" -> ChessPiece.PieceType.KNIGHT;
+                case "R" -> ChessPiece.PieceType.ROOK;
+                case "B" -> ChessPiece.PieceType.BISHOP;
+                default -> throw new IllegalArgumentException("Invalid promotion piece: " + input);
+            };
+        }
+    }
+
+    private String move(String... params) throws ResponseException {
+        ChessPosition start = positionParser(params[0]);
+        ChessPosition end = positionParser(params[1]);
+        ChessPiece.PieceType promotionPiece = promotionPieceParser(params[2]);
+        ChessMove move = new ChessMove(start, end, promotionPiece);
+        ws.makeMove(authToken, gameData.gameID(), move);
+        return "";
     }
 
     private String leave() throws ResponseException {
