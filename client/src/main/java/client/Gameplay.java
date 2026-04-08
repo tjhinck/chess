@@ -20,6 +20,7 @@ import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
 
 public class Gameplay implements WsMessageHandler {
     private final WsFacade ws;
+    private final String authToken;
     GameData gameData;
     ChessGame chessGame;
     Role role;
@@ -30,14 +31,16 @@ public class Gameplay implements WsMessageHandler {
         OBSERVER
     }
 
-    public Gameplay(String serverURL, GameData gameData, Role role, TeamColor color) throws ResponseException {
+    public Gameplay(String serverURL, String authToken, GameData gameData, Role role, TeamColor color) throws ResponseException {
         ws = new WsFacade(serverURL, this);
+        this.authToken = authToken;
         this.gameData = gameData;
         this.role = role;
         this.color = color;
     }
 
-    public void run(){
+    public void run() throws ResponseException {
+        ws.connect(authToken, gameData.gameID());
         chessGame = gameData.chessGame();
         System.out.print("Starting ");
         System.out.println(gameData.gameName());

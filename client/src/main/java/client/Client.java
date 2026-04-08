@@ -3,7 +3,6 @@ package client;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import websocket.WsFacade;
 import chess.ChessGame;
 import model.GameData;
 import request.*;
@@ -143,7 +142,7 @@ public class Client{
         }
         JoinGameRequest joinGameRequest = new JoinGameRequest(selectedGame.gameID(), color);
         server.join(joinGameRequest, authToken);
-        Gameplay gameplay = new Gameplay(serverURL, selectedGame, Gameplay.Role.PLAYER, color);
+        Gameplay gameplay = new Gameplay(serverURL, authToken, selectedGame, Gameplay.Role.PLAYER, color);
         gameplay.run();
         return "";
     }
@@ -162,7 +161,7 @@ public class Client{
         } catch (IndexOutOfBoundsException ex) {
             return "Game " + gameNum + " not found";
         }
-        Gameplay gameplay = new Gameplay(serverURL, selectedGame, Gameplay.Role.OBSERVER, ChessGame.TeamColor.WHITE);
+        Gameplay gameplay = new Gameplay(serverURL, authToken, selectedGame, Gameplay.Role.OBSERVER, ChessGame.TeamColor.WHITE);
         gameplay.run();
         return "";
     }

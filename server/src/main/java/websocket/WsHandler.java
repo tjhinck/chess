@@ -1,10 +1,9 @@
 package websocket;
 
-import com.google.gson.Gson;
 import io.javalin.websocket.*;
+import server.Server;
 import websocket.commands.UserGameCommand;
 import org.eclipse.jetty.websocket.api.Session;
-import java.io.IOException;
 
 public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
@@ -19,15 +18,29 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
 
     @Override
     public void handleMessage(WsMessageContext ctx) {
+        int gameId = -1;
+        Session session = ctx.session;
+
         try {
-            UserGameCommand command = new Gson().fromJson(ctx.message(), UserGameCommand.class);
+            UserGameCommand command = Server.GSON.fromJson(ctx.message(), UserGameCommand.class);
+            gameId = command.getGameID();
+            String username = getUsername(command.getAuthToken());
+            saveSession(gameId, session);
+
             switch (command.getCommandType()) {
-                case CONNECT -> connect(ctx.session);
+                case CONNECT -> connect(session, username, (ConnectCommand) command);
+                case MAKE_MOVE -> makeMove(session, username, (MakeMoveCommand) command);
+                case LEAVE -> leaveGame(session, username, (LeaveGameCommand) command);
+                case RESIGN -> resign(session, username, (ResignCommand) command);
             }
-        } catch (Exception ex) {
+        } catch(UnauthorizedException ex){
+            sendMessage(session, gameId, new ErrorMessage("Error: unauthorized"));
+        } catch(Exception ex){
             ex.printStackTrace();
+            sendMessage(session, gameId, new ErrorMessage("Error: " + ex.getMessage()));
+
         }
-    }
+        }
 
     @Override
     public void handleClose(WsCloseContext ctx) {
