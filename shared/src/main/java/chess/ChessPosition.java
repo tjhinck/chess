@@ -47,6 +47,12 @@ public final class ChessPosition {
         return (row > 0 && row < 9) && (col > 0 && col < 9);
     }
 
+    public String toCommandString(){
+        char file = (char) ('a' + this.col);
+        char rank = (char) ('1' + this.row);
+        return String.format("%c%c", file, rank);
+    }
+
     @Override
     public String toString() {
         return String.format("[%d,%d]", row, col);

@@ -1,7 +1,8 @@
 package websocket;
 
 import chess.ChessGame;
-import chess.GameRole;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import dataaccess.AuthDao;
 import dataaccess.DataAccessException;
 import dataaccess.GameDao;
@@ -10,7 +11,7 @@ import model.AuthData;
 import model.GameData;
 import response.ResponseException;
 import server.Server;
-import websocket.commands.UserGameCommand;
+import websocket.commands.*;
 import org.eclipse.jetty.websocket.api.Session;
 import websocket.messages.ServerMessage;
 
@@ -46,14 +47,14 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
                 return;
             }
             String username = authData.username();
-//            gameId = command.getGameID();
-//            saveSession(gameId, session);
-
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, command.getGameID());
-//                case MAKE_MOVE -> makeMove(session, username, (MakeMoveCommand) command);
                 case LEAVE -> leaveGame(session, username, command.getGameID());
 //                case RESIGN -> resign(session, username, (ResignCommand) command);
+                case MAKE_MOVE -> {
+                    MakeMoveCommand makeMoveCommand = Server.GSON.fromJson(ctx.message(), MakeMoveCommand.class);
+                    makeMove(session, username,makeMoveCommand);
+                }
             }
         } catch (IOException | DataAccessException ex) {
             ex.printStackTrace();
@@ -109,5 +110,44 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
         String message = username + " has left";
         broadcastMessage.setMessage(message);
         connections.broadcast(gameID, session, broadcastMessage);
+    }
+
+    private void makeMove(Session session, String username, MakeMoveCommand makeMoveCommand) throws DataAccessException, IOException {
+        GameData gameData = gameDao.getGame(makeMoveCommand.getGameID());
+        ChessGame.TeamColor playerColor;
+        if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(username)){
+            playerColor = ChessGame.TeamColor.WHITE;
+        } else if (gameData.blackUsername() != null && gameData.blackUsername().equals(username)) {
+            playerColor = ChessGame.TeamColor.BLACK;
+        } else {
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
+            errorMessage.setErrorMessage("Error: unauthorized");
+            session.getRemote().sendString(errorMessage.toString());
+            return;
+        }
+        ChessGame game = gameData.chessGame();
+        if (game.getTeamTurn() != playerColor){
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
+            errorMessage.setErrorMessage("Error: Wait your turn");
+            session.getRemote().sendString(errorMessage.toString());
+            return;
+        }
+        try {
+            game.makeMove(makeMoveCommand.getMove());
+        } catch (InvalidMoveException e) {
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
+            errorMessage.setErrorMessage("Error: Illegal move");
+            session.getRemote().sendString(errorMessage.toString());
+            return;
+        }
+        GameData updatedGame = new GameData(gameData.gameID(), gameData.gameName(), game, gameData.whiteUsername(), gameData.blackUsername());
+        gameDao.updateGame(updatedGame);
+        ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
+        loadGameMessage.setChessGame(game);
+        ServerMessage moveNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        String notification = String.format("%s moved %s", username, makeMoveCommand.getMove().toCommandString());
+        moveNotification.setMessage(notification);
+        connections.broadcast(gameData.gameID(), null, loadGameMessage);
+        connections.broadcast(gameData.gameID(), session, moveNotification);
     }
 }

@@ -43,6 +43,10 @@ public final class ChessMove {
         return promotionPiece;
     }
 
+    public String toCommandString(){
+        return String.format("%s %s %s", startPosition.toCommandString(), endPosition.toCommandString(), promotionPiece);
+    }
+
     @Override
     public String toString() {
         return String.format("%s%s", startPosition, endPosition);

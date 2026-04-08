@@ -11,6 +11,7 @@ import websocket.messages.ServerMessage;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
@@ -41,13 +42,14 @@ public class Gameplay implements WsMessageHandler {
         Scanner scanner = new Scanner(System.in);
         var result = "";
         while (!result.equals(goodbye)) {
-            printPrompt();
+//            printPrompt();
             String line = scanner.nextLine();
             try {
                 result = eval(line);
 //                displayBoard();
                 System.out.print(SET_TEXT_COLOR_BLUE);
                 System.out.print(result);
+                printPrompt();
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(SET_TEXT_COLOR_RED);
@@ -69,18 +71,21 @@ public class Gameplay implements WsMessageHandler {
 
 
     private void displayNotification(String message){
-        System.out.print(SET_BG_COLOR_YELLOW);
+        System.out.print(SET_TEXT_COLOR_YELLOW);
         System.out.println(message);
+        printPrompt();
     }
 
     private void displayError(String errorMessage){
         System.out.print(SET_TEXT_COLOR_RED);
         System.out.println(errorMessage);
+        printPrompt();
     }
 
     private void loadGame(ChessGame chessGame){
         this.chessGame = chessGame;
         displayBoard();
+        printPrompt();
     }
 
     private String help = """
@@ -137,25 +142,32 @@ public class Gameplay implements WsMessageHandler {
             return null;
         }
         String promotionPieceStr = input.toUpperCase().trim();
-        try {
-            return ChessPiece.PieceType.valueOf(promotionPieceStr);
-        } catch (IllegalArgumentException e) {
-            return switch (promotionPieceStr) {
-                case "Q" -> ChessPiece.PieceType.QUEEN;
-                case "N" -> ChessPiece.PieceType.KNIGHT;
-                case "R" -> ChessPiece.PieceType.ROOK;
-                case "B" -> ChessPiece.PieceType.BISHOP;
-                default -> throw new IllegalArgumentException("Invalid promotion piece: " + input);
-            };
-        }
+//        try {
+//            return ChessPiece.PieceType.valueOf(promotionPieceStr);
+//        } catch (IllegalArgumentException e) {
+        return switch (promotionPieceStr) {
+            case "Q", "QUEEN" -> ChessPiece.PieceType.QUEEN;
+            case "N", "KNIGHT" -> ChessPiece.PieceType.KNIGHT;
+            case "R", "ROOK" -> ChessPiece.PieceType.ROOK;
+            case "B", "BISHOP" -> ChessPiece.PieceType.BISHOP;
+            default -> throw new IllegalArgumentException("Invalid promotion piece: " + input);
+        };
     }
 
     private String move(String... params) throws ResponseException {
+        if (chessGame.getTeamTurn() != color){
+            throw new ResponseException(ResponseException.HttpCode.unauthorized, "Error: Wait your turn");
+        }
         ChessPosition start = positionParser(params[0]);
         ChessPosition end = positionParser(params[1]);
         ChessPiece.PieceType promotionPiece = promotionPieceParser(params[2]);
         ChessMove move = new ChessMove(start, end, promotionPiece);
-        ws.makeMove(authToken, gameData.gameID(), move);
+        Collection<ChessMove> validMoves = chessGame.validMoves(start);
+        if (validMoves.contains(move)){
+            ws.makeMove(authToken, gameData.gameID(), move);
+        } else {
+            throw new IllegalArgumentException("Illegal Move");
+        }
         return "";
     }
 

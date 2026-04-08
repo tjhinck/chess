@@ -53,7 +53,7 @@ public class Client{
                 result = eval(line);
                 System.out.print(SET_TEXT_COLOR_BLUE + result);
             } catch (Throwable e) {
-                System.out.print(SET_TEXT_COLOR_RED + "Error: Something went wrong...");
+                System.out.print(SET_TEXT_COLOR_RED + "Error: Something went wrong. Please try again");
             }
         }
         System.out.println();

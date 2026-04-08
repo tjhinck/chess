@@ -20,10 +20,10 @@ public class ConnectionManager {
 
     public void broadcast(Integer gameID, Session excludeSession, ServerMessage message) throws IOException {
         String msg = message.toString();
-        for (Session c : gameSessions.get(gameID)) {
-            if (c.isOpen()) {
-                if (!c.equals(excludeSession)) {
-                    c.getRemote().sendString(msg);
+        for (Session s : gameSessions.get(gameID)) {
+            if (s.isOpen()) {
+                if (!s.equals(excludeSession)) {
+                    s.getRemote().sendString(msg);
                 }
             }
         }
