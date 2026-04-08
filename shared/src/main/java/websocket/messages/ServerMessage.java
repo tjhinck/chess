@@ -14,6 +14,7 @@ import java.util.Objects;
 public class ServerMessage {
     ServerMessageType serverMessageType;
     String message;
+    String errorMessage;
     ChessGame game;
 
     public enum ServerMessageType {
@@ -34,12 +35,20 @@ public class ServerMessage {
         return message;
     }
 
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
     public ChessGame getGame() {
         return game;
     }
 
     public void setMessage(String message){
         this.message = message;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 
     public void setChessGame(ChessGame chessGame){

@@ -6,7 +6,9 @@ import dataaccess.AuthDao;
 import dataaccess.DataAccessException;
 import dataaccess.GameDao;
 import io.javalin.websocket.*;
+import model.AuthData;
 import model.GameData;
+import response.ResponseException;
 import server.Server;
 import websocket.commands.UserGameCommand;
 import org.eclipse.jetty.websocket.api.Session;
@@ -32,11 +34,18 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
 
 
     @Override
-    public void handleMessage(WsMessageContext ctx) {
+    public void handleMessage(WsMessageContext ctx) throws ResponseException {
         Session session = ctx.session;
         try {
             UserGameCommand command = Server.GSON.fromJson(ctx.message(), UserGameCommand.class);
-            String username = authDao.getAuthData(command.getAuthToken()).username();
+            AuthData authData = authDao.getAuthData(command.getAuthToken());
+            if (authData == null){
+                ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
+                errorMessage.setErrorMessage("Error: unauthorized");
+                session.getRemote().sendString(errorMessage.toString());
+                return;
+            }
+            String username = authData.username();
 //            gameId = command.getGameID();
 //            saveSession(gameId, session);
 
@@ -56,9 +65,15 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
         System.out.println("Websocket closed");
     }
 
-    private void connect(Session session, String username, Integer gameID) throws DataAccessException, IOException {
+    private void connect(Session session, String username, Integer gameID) throws DataAccessException, IOException, ResponseException {
         connections.addSession(gameID, session);
         GameData gameData = gameDao.getGame(gameID);
+        if (gameData == null){
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
+            errorMessage.setErrorMessage("Error: invalid game");
+            session.getRemote().sendString(errorMessage.toString());
+            return;
+        }
         loadGame(session, gameData.chessGame());
 
         ServerMessage broadcastMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
