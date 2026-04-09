@@ -130,7 +130,7 @@ public class Gameplay implements WsMessageHandler {
         } catch (ResponseException | IllegalArgumentException ex) {
             return SET_TEXT_COLOR_RED + ex.getMessage();
         } catch (IllegalStateException ex){
-            return SET_TEXT_COLOR_RED + "Bad Connection";
+            return SET_TEXT_COLOR_RED + "Connection Error";
         } catch (ArrayIndexOutOfBoundsException ex){
             return SET_TEXT_COLOR_RED + "Invalid input. Enter 'help' to view required format";
         }
