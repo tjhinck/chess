@@ -3,6 +3,11 @@ package client;
 import chess.*;
 import model.GameData;
 import chess.ChessGame.TeamColor;
+import request.CreateGameRequest;
+import request.LoginRequest;
+import request.RegisterRequest;
+import response.LoginResponse;
+import response.RegisterResponse;
 import response.ResponseException;
 import websocket.WsFacade;
 import websocket.WsMessageHandler;
@@ -35,6 +40,15 @@ public class Gameplay implements WsMessageHandler {
     }
 
     public void run() throws ResponseException {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Returning to Menu...");
+            try {
+                ws.disconnect(authToken, gameData.gameID());
+            } catch (ResponseException e) {
+                throw new RuntimeException(e);
+            }
+        }));
+
         System.out.print("Starting ");
         System.out.println(gameData.gameName());
         ws.connect(authToken, gameData.gameID());
@@ -53,7 +67,7 @@ public class Gameplay implements WsMessageHandler {
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(SET_TEXT_COLOR_RED);
-                System.out.print("Error: ");
+                System.out.print("Uncaught error: ");
                 System.out.print(msg);
             }
         }
@@ -71,12 +85,14 @@ public class Gameplay implements WsMessageHandler {
 
 
     private void displayNotification(String message){
+        System.out.println();
         System.out.print(SET_TEXT_COLOR_YELLOW);
         System.out.println(message);
         printPrompt();
     }
 
     private void displayError(String errorMessage){
+        System.out.println();
         System.out.print(SET_TEXT_COLOR_RED);
         System.out.println(errorMessage);
         printPrompt();
@@ -84,6 +100,7 @@ public class Gameplay implements WsMessageHandler {
 
     private void loadGame(ChessGame chessGame){
         this.chessGame = chessGame;
+        System.out.println();
         displayBoard();
         printPrompt();
     }
@@ -119,6 +136,8 @@ public class Gameplay implements WsMessageHandler {
             };
         } catch (ResponseException ex) {
             return SET_TEXT_COLOR_RED + ex.getMessage();
+        } catch (IllegalStateException ex){
+            return SET_TEXT_COLOR_RED + "Bad Connection";
         } catch (IllegalArgumentException ex) {
             return SET_TEXT_COLOR_RED + ex.getMessage();
         } catch (ArrayIndexOutOfBoundsException ex){
@@ -136,8 +155,8 @@ public class Gameplay implements WsMessageHandler {
         }
         char file = positionStr.toLowerCase().charAt(0);
         char rank = positionStr.charAt(1);
-        int col = file - 'a';
-        int row = rank - '1';
+        int col = (file - 'a') + 1;
+        int row = (rank - '1') + 1;
         return new ChessPosition(row, col);
     }
 
@@ -146,9 +165,6 @@ public class Gameplay implements WsMessageHandler {
             return null;
         }
         String promotionPieceStr = input.toUpperCase().trim();
-//        try {
-//            return ChessPiece.PieceType.valueOf(promotionPieceStr);
-//        } catch (IllegalArgumentException e) {
         return switch (promotionPieceStr) {
             case "Q", "QUEEN" -> ChessPiece.PieceType.QUEEN;
             case "N", "KNIGHT" -> ChessPiece.PieceType.KNIGHT;
@@ -159,16 +175,20 @@ public class Gameplay implements WsMessageHandler {
     }
 
     private String move(String... params) throws ResponseException {
-//        assertIsPlayer();
         if (chessGame.getTeamTurn() != color){
-            throw new ResponseException(ResponseException.HttpCode.unauthorized, "Error: Wait your turn");
+            throw new ResponseException(ResponseException.HttpCode.unauthorized, String.format("It's %s's turn, not yours", chessGame.getTeamTurn().toString().toLowerCase()));
         }
         ChessPosition start = positionParser(params[0]);
         ChessPosition end = positionParser(params[1]);
-        ChessPiece.PieceType promotionPiece = promotionPieceParser(params[2]);
+        ChessPiece.PieceType promotionPiece;
+        try {
+            promotionPiece = promotionPieceParser(params[2]);
+        } catch (ArrayIndexOutOfBoundsException ex){
+           promotionPiece = null;
+        }
         ChessMove move = new ChessMove(start, end, promotionPiece);
         Collection<ChessMove> validMoves = chessGame.validMoves(start);
-        if (validMoves.contains(move)){
+        if (validMoves != null && validMoves.contains(move)){
             ws.makeMove(authToken, gameData.gameID(), move);
         } else {
             throw new IllegalArgumentException("Illegal Move");
@@ -187,7 +207,6 @@ public class Gameplay implements WsMessageHandler {
     }
 
     private String resign() throws ResponseException {
-//        assertIsPlayer();
         System.out.print(SET_TEXT_COLOR_RED);
         System.out.println("Are you sure you want to resign? (y/n)");
         printPrompt();
@@ -201,7 +220,12 @@ public class Gameplay implements WsMessageHandler {
     }
 
     private String showMoves(String... params){
-        return "";
+        ChessPosition target = positionParser(params[0]);
+        Collection<ChessMove> validMoves = chessGame.validMoves(target);
+        if (validMoves == null){
+            return "Piece not found";
+        }
+
     }
 
     private void displayBoard(){
@@ -287,15 +311,17 @@ public class Gameplay implements WsMessageHandler {
         }
     }
 
-    private void assertIsPlayer() throws ResponseException {
-        if (role == GameRole.OBSERVER) {
-            throw new ResponseException(ResponseException.HttpCode.badRequest, "You are not playing");
-        }
+    public static void main(String[] args) throws ResponseException {
+        String serverUrl = "http://localhost:8080";
+        ServerFacade server = new ServerFacade(serverUrl);
+        server.clear();
+        RegisterRequest registerRequest = new RegisterRequest("user", "pass", "mail");
+        RegisterResponse registerResponse = server.register(registerRequest);
+        String authToken = registerResponse.authToken();
+        CreateGameRequest createGameRequest = new CreateGameRequest("game");
+        int gameID = server.create(createGameRequest, authToken).gameID();
+        Gameplay gameplay = new Gameplay(serverUrl, authToken, new GameData(gameID, "game", new ChessGame(), null, null), GameRole.PLAYER, TeamColor.WHITE);
+        gameplay.run();
+//        gameplay.move("d2", "d4");
     }
-
-//    public static void main(String[] args) throws ResponseException {
-//        String serverUrl = "http://localhost:8080";
-//        Gameplay gameplay = new Gameplay(serverUrl, new GameData(1, "game", new ChessGame(), null, null), Gameplay.Role.PLAYER, TeamColor.WHITE);
-//        gameplay.run();
-//    }
 }

@@ -48,8 +48,8 @@ public final class ChessPosition {
     }
 
     public String toCommandString(){
-        char file = (char) ('a' + this.col);
-        char rank = (char) ('1' + this.row);
+        char file = (char) ('a' + (this.col - 1));
+        char rank = (char) ('1' + (this.row - 1));
         return String.format("%c%c", file, rank);
     }
 

@@ -44,7 +44,13 @@ public final class ChessMove {
     }
 
     public String toCommandString(){
-        return String.format("%s %s %s", startPosition.toCommandString(), endPosition.toCommandString(), promotionPiece);
+        String promotionPieceStr;
+        if (promotionPiece != null){
+            promotionPieceStr = promotionPiece.toString();
+        } else {
+            promotionPieceStr = "\b";
+        }
+        return String.format("%s %s %s", startPosition.toCommandString(), endPosition.toCommandString(), promotionPieceStr);
     }
 
     @Override
