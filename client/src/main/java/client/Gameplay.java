@@ -92,7 +92,9 @@ public class Gameplay implements WsMessageHandler {
                 help  -  view command options
                 leave  -  leave current game
                 redraw  -  redraw the board
-                move <start> <end> <promotion> -  make move ex: move e2 e4 or move a7 a8 queen
+                move <start> <end> <promotion> -  make move, ex: move e2 e4 or move a7 a8 queen
+                show <piece>  -  display legal moves for a piece, ex: list b2
+                resign  -  resign from the game
                 """;
 
     private String goodbye = "Thanks for playing";
@@ -111,6 +113,8 @@ public class Gameplay implements WsMessageHandler {
                 case "leave" -> leave();
                 case "redraw" -> redraw();
                 case "move" -> move(params);
+                case "show" -> showMoves(params);
+                case "resign" -> resign();
                 default -> "Enter 'help' to view options";
             };
         } catch (ResponseException ex) {
@@ -155,6 +159,7 @@ public class Gameplay implements WsMessageHandler {
     }
 
     private String move(String... params) throws ResponseException {
+//        assertIsPlayer();
         if (chessGame.getTeamTurn() != color){
             throw new ResponseException(ResponseException.HttpCode.unauthorized, "Error: Wait your turn");
         }
@@ -178,6 +183,24 @@ public class Gameplay implements WsMessageHandler {
 
     private String redraw(){
         displayBoard();
+        return "";
+    }
+
+    private String resign() throws ResponseException {
+//        assertIsPlayer();
+        System.out.print(SET_TEXT_COLOR_RED);
+        System.out.println("Are you sure you want to resign? (y/n)");
+        printPrompt();
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.nextLine();
+        input = input.toLowerCase();
+        if (input.equals("y") || input.equals("yes")){
+            ws.resign(authToken, gameData.gameID());
+        }
+        return "";
+    }
+
+    private String showMoves(String... params){
         return "";
     }
 
@@ -261,6 +284,12 @@ public class Gameplay implements WsMessageHandler {
                 case PAWN -> BLACK_PAWN;
             };
             return color + pieceChar;
+        }
+    }
+
+    private void assertIsPlayer() throws ResponseException {
+        if (role == GameRole.OBSERVER) {
+            throw new ResponseException(ResponseException.HttpCode.badRequest, "You are not playing");
         }
     }
 

@@ -1,7 +1,6 @@
 package websocket;
 
 import chess.ChessGame;
-import chess.ChessMove;
 import chess.InvalidMoveException;
 import dataaccess.AuthDao;
 import dataaccess.DataAccessException;
@@ -50,7 +49,7 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, command.getGameID());
                 case LEAVE -> leaveGame(session, username, command.getGameID());
-//                case RESIGN -> resign(session, username, (ResignCommand) command);
+                case RESIGN -> resign(session, username, command.getGameID());
                 case MAKE_MOVE -> {
                     MakeMoveCommand makeMoveCommand = Server.GSON.fromJson(ctx.message(), MakeMoveCommand.class);
                     makeMove(session, username,makeMoveCommand);
@@ -114,12 +113,8 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
 
     private void makeMove(Session session, String username, MakeMoveCommand makeMoveCommand) throws DataAccessException, IOException {
         GameData gameData = gameDao.getGame(makeMoveCommand.getGameID());
-        ChessGame.TeamColor playerColor;
-        if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(username)){
-            playerColor = ChessGame.TeamColor.WHITE;
-        } else if (gameData.blackUsername() != null && gameData.blackUsername().equals(username)) {
-            playerColor = ChessGame.TeamColor.BLACK;
-        } else {
+        ChessGame.TeamColor playerColor = getPlayerColor(gameData, username);
+        if (playerColor == null){
             ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
             errorMessage.setErrorMessage("Error: unauthorized");
             session.getRemote().sendString(errorMessage.toString());
@@ -140,14 +135,74 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
             session.getRemote().sendString(errorMessage.toString());
             return;
         }
+
+        ServerMessage moveNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        String notification = String.format("%s moved %s", username, makeMoveCommand.getMove().toCommandString());
+        moveNotification.setMessage(notification);
+
+        ServerMessage gameOver = null;
+        if (game.isInStalemate(playerColor) || game.isInCheckmate(getOpponentColor(playerColor))) {
+            game.endGame();
+            gameOver = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+            String gameOverMessage;
+            if (game.isInStalemate(playerColor)) {
+                gameOverMessage = "Game Over: Stalemate";
+            } else {
+                gameOverMessage = String.format("Game Over: Checkmate\n%s wins!", username);
+            }
+            gameOver.setMessage(gameOverMessage);
+        }
+
         GameData updatedGame = new GameData(gameData.gameID(), gameData.gameName(), game, gameData.whiteUsername(), gameData.blackUsername());
         gameDao.updateGame(updatedGame);
         ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
         loadGameMessage.setChessGame(game);
-        ServerMessage moveNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-        String notification = String.format("%s moved %s", username, makeMoveCommand.getMove().toCommandString());
-        moveNotification.setMessage(notification);
-        connections.broadcast(gameData.gameID(), null, loadGameMessage);
+
         connections.broadcast(gameData.gameID(), session, moveNotification);
+        connections.broadcast(gameData.gameID(), null, loadGameMessage);
+        if (gameOver != null){
+            connections.broadcast(gameData.gameID(), null, gameOver);
+        }
+    }
+
+    private void resign(Session session, String username, Integer gameID) throws DataAccessException, IOException {
+        GameData gameData = gameDao.getGame(gameID);
+        ChessGame.TeamColor playerColor = getPlayerColor(gameData, username);
+        if (playerColor == null){
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
+            errorMessage.setErrorMessage("Error: unauthorized");
+            session.getRemote().sendString(errorMessage.toString());
+            return;
+        }
+        ChessGame game = gameData.chessGame();
+        try {
+            game.assertGameInPlay();
+        } catch (InvalidMoveException e) {
+            ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
+            errorMessage.setErrorMessage("Error: game is already over");
+            session.getRemote().sendString(errorMessage.toString());
+            return;
+        }
+        game.endGame();
+        GameData updatedGame = new GameData(gameData.gameID(), gameData.gameName(), game, gameData.whiteUsername(), gameData.blackUsername());
+        gameDao.updateGame(updatedGame);
+        ServerMessage moveNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        String notification = String.format("%s has resigned", username);
+        moveNotification.setMessage(notification);
+
+        connections.broadcast(gameData.gameID(), null, moveNotification);
+    }
+
+    private ChessGame.TeamColor getPlayerColor(GameData gameData, String username ) throws IOException {
+        if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(username)){
+            return ChessGame.TeamColor.WHITE;
+        } else if (gameData.blackUsername() != null && gameData.blackUsername().equals(username)) {
+            return ChessGame.TeamColor.BLACK;
+        }
+        return null;
+    }
+
+    private ChessGame.TeamColor getOpponentColor(ChessGame.TeamColor playerColor){
+        return playerColor == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
     }
 }

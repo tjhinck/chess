@@ -13,11 +13,13 @@ import java.util.Objects;
 public class ChessGame {
     TeamColor teamTurn;
     ChessBoard board;
+    Boolean inPlay;
 
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
         board = new ChessBoard();
         board.resetBoard();
+        inPlay = true;
     }
 
     /**
@@ -114,6 +116,7 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        assertGameInPlay();
         ChessPiece targetPiece = board.getPiece(move.getStartPosition());
         if (targetPiece != null && targetPiece.getTeamColor() == teamTurn){
             Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
@@ -183,6 +186,16 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+    public void endGame(){
+        inPlay = false;
+    }
+
+    public void assertGameInPlay() throws InvalidMoveException {
+        if (!inPlay) {
+            throw new InvalidMoveException("This game is over");
+        }
     }
 
     @Override
