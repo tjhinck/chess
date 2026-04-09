@@ -1,12 +1,10 @@
 package client;
 
 import chess.*;
-import model.GameData;
 import chess.ChessGame.TeamColor;
 import request.CreateGameRequest;
-import request.LoginRequest;
+import request.JoinGameRequest;
 import request.RegisterRequest;
-import response.LoginResponse;
 import response.RegisterResponse;
 import response.ResponseException;
 import websocket.WsFacade;
@@ -15,9 +13,7 @@ import websocket.messages.ServerMessage;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Scanner;
+import java.util.*;
 
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
@@ -25,50 +21,48 @@ import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
 public class Gameplay implements WsMessageHandler {
     private final WsFacade ws;
     private final String authToken;
-    GameData gameData;
+    String gameName;
+    Integer gameID;
     ChessGame chessGame;
     GameRole role;
     TeamColor color;
 
 
-    public Gameplay(String serverURL, String authToken, GameData gameData, GameRole role, TeamColor color) throws ResponseException {
+    public Gameplay(String serverURL, String authToken, Integer gameID, String gameName, GameRole role, TeamColor color) throws ResponseException {
         ws = new WsFacade(serverURL, this);
         this.authToken = authToken;
-        this.gameData = gameData;
+        this.gameID = gameID;
+        this.gameName = gameName;
         this.role = role;
         this.color = color;
     }
 
     public void run() throws ResponseException {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Returning to Menu...");
+            System.out.println("Exiting...");
             try {
-                ws.disconnect(authToken, gameData.gameID());
+                ws.disconnect(authToken, gameID);
             } catch (ResponseException e) {
                 throw new RuntimeException(e);
             }
         }));
 
         System.out.print("Starting ");
-        System.out.println(gameData.gameName());
-        ws.connect(authToken, gameData.gameID());
+        System.out.println(gameName);
+        ws.connect(authToken, gameID);
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
         while (!result.equals(goodbye)) {
-//            printPrompt();
             String line = scanner.nextLine();
             try {
                 result = eval(line);
-//                displayBoard();
                 System.out.print(SET_TEXT_COLOR_BLUE);
                 System.out.print(result);
                 printPrompt();
             } catch (Throwable e) {
-                var msg = e.toString();
-                System.out.print(SET_TEXT_COLOR_RED);
-                System.out.print("Uncaught error: ");
-                System.out.print(msg);
+                System.out.print(SET_TEXT_COLOR_RED + "Error: Something went wrong. Please try again");
+//                System.out.print(SET_TEXT_COLOR_RED + e.getMessage());
             }
         }
         System.out.println();
@@ -88,7 +82,6 @@ public class Gameplay implements WsMessageHandler {
         System.out.println();
         System.out.print(SET_TEXT_COLOR_YELLOW);
         System.out.println(message);
-        printPrompt();
     }
 
     private void displayError(String errorMessage){
@@ -101,11 +94,11 @@ public class Gameplay implements WsMessageHandler {
     private void loadGame(ChessGame chessGame){
         this.chessGame = chessGame;
         System.out.println();
-        displayBoard();
+        displayBoard(false, null, null);
         printPrompt();
     }
 
-    private String help = """
+    private final String help = """
                 help  -  view command options
                 leave  -  leave current game
                 redraw  -  redraw the board
@@ -114,7 +107,7 @@ public class Gameplay implements WsMessageHandler {
                 resign  -  resign from the game
                 """;
 
-    private String goodbye = "Thanks for playing";
+    private final String goodbye = "Thanks for playing";
 
 
     private String eval(String input){
@@ -134,12 +127,10 @@ public class Gameplay implements WsMessageHandler {
                 case "resign" -> resign();
                 default -> "Enter 'help' to view options";
             };
-        } catch (ResponseException ex) {
+        } catch (ResponseException | IllegalArgumentException ex) {
             return SET_TEXT_COLOR_RED + ex.getMessage();
         } catch (IllegalStateException ex){
             return SET_TEXT_COLOR_RED + "Bad Connection";
-        } catch (IllegalArgumentException ex) {
-            return SET_TEXT_COLOR_RED + ex.getMessage();
         } catch (ArrayIndexOutOfBoundsException ex){
             return SET_TEXT_COLOR_RED + "Invalid input. Enter 'help' to view required format";
         }
@@ -151,7 +142,7 @@ public class Gameplay implements WsMessageHandler {
 
     private ChessPosition positionParser(String positionStr){
         if (positionStr == null || positionStr.length() < 2) {
-            throw new IllegalArgumentException("Invalid Move");
+            throw new IllegalArgumentException("Invalid Square");
         }
         char file = positionStr.toLowerCase().charAt(0);
         char rank = positionStr.charAt(1);
@@ -189,7 +180,7 @@ public class Gameplay implements WsMessageHandler {
         ChessMove move = new ChessMove(start, end, promotionPiece);
         Collection<ChessMove> validMoves = chessGame.validMoves(start);
         if (validMoves != null && validMoves.contains(move)){
-            ws.makeMove(authToken, gameData.gameID(), move);
+            ws.makeMove(authToken, gameID, move);
         } else {
             throw new IllegalArgumentException("Illegal Move");
         }
@@ -197,12 +188,12 @@ public class Gameplay implements WsMessageHandler {
     }
 
     private String leave() throws ResponseException {
-        ws.disconnect(authToken, gameData.gameID());
+        ws.disconnect(authToken, gameID);
         return goodbye;
     }
 
     private String redraw(){
-        displayBoard();
+        displayBoard(false, null, null);
         return "";
     }
 
@@ -214,7 +205,7 @@ public class Gameplay implements WsMessageHandler {
         String input = scanner.nextLine();
         input = input.toLowerCase();
         if (input.equals("y") || input.equals("yes")){
-            ws.resign(authToken, gameData.gameID());
+            ws.resign(authToken, gameID);
         }
         return "";
     }
@@ -225,10 +216,15 @@ public class Gameplay implements WsMessageHandler {
         if (validMoves == null){
             return "Piece not found";
         }
-
+        Collection<ChessPosition> highlightSquares = new ArrayList<>();
+        for (ChessMove move : validMoves){
+            highlightSquares.add(move.getEndPosition());
+        }
+        displayBoard(true, target, highlightSquares);
+        return "";
     }
 
-    private void displayBoard(){
+    private void displayBoard(Boolean highlight, ChessPosition target, Collection<ChessPosition> highlightSquares){
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         ChessBoard chessBoard = chessGame.getBoard();
         String columns;
@@ -267,11 +263,20 @@ public class Gameplay implements WsMessageHandler {
             out.print(SET_TEXT_COLOR_WHITE);
             out.print(" " + row + " ");
             out.print(ANSI_RESET);
-            for (int col = colStart; col != colEnd; col += colInc){
-                out.print(ANSI_RESET);
-                ChessPiece piece = chessBoard.getPiece(row, col);
-                out.print(squareColor(row, col));
-                out.print(pieceChar(piece));
+            if (highlight){
+                for (int col = colStart; col != colEnd; col += colInc) {
+                    out.print(ANSI_RESET);
+                    ChessPiece piece = chessBoard.getPiece(row, col);
+                    out.print(checkHighlightedSquareColor(row, col, target, highlightSquares));
+                    out.print(pieceChar(piece));
+                }
+            } else {
+                for (int col = colStart; col != colEnd; col += colInc) {
+                    out.print(ANSI_RESET);
+                    ChessPiece piece = chessBoard.getPiece(row, col);
+                    out.print(squareColor(row, col));
+                    out.print(pieceChar(piece));
+                }
             }
             out.print(SET_BG_COLOR_DARK_GREY);
             out.print(SET_TEXT_COLOR_WHITE);
@@ -289,6 +294,20 @@ public class Gameplay implements WsMessageHandler {
             return ANSI_BLACK_SQUARE;
         }
         return ANSI_WHITE_SQUARE;
+    }
+
+    private String checkHighlightedSquareColor(int row, int col, ChessPosition target, Collection<ChessPosition> highlightedSquares){
+        ChessPosition positionToCheck = new ChessPosition(row, col);
+        if (positionToCheck.equals(target)){
+            return SET_BG_COLOR_MAGENTA;
+        } else if (highlightedSquares.contains(positionToCheck)) {
+            if ((row + col) % 2 == 0) {
+                return SET_BG_COLOR_DARK_GREEN;
+            }
+            return SET_BG_COLOR_GREEN;
+        } else {
+            return squareColor(row, col);
+        }
     }
 
     private String pieceChar(ChessPiece piece) {
@@ -320,7 +339,9 @@ public class Gameplay implements WsMessageHandler {
         String authToken = registerResponse.authToken();
         CreateGameRequest createGameRequest = new CreateGameRequest("game");
         int gameID = server.create(createGameRequest, authToken).gameID();
-        Gameplay gameplay = new Gameplay(serverUrl, authToken, new GameData(gameID, "game", new ChessGame(), null, null), GameRole.PLAYER, TeamColor.WHITE);
+        JoinGameRequest joinGameRequest = new JoinGameRequest(gameID, TeamColor.WHITE);
+        server.join(joinGameRequest, authToken);
+        Gameplay gameplay = new Gameplay(serverUrl, authToken, gameID, "game", GameRole.PLAYER, TeamColor.WHITE);
         gameplay.run();
 //        gameplay.move("d2", "d4");
     }
