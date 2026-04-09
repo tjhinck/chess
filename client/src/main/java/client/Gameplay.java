@@ -167,7 +167,8 @@ public class Gameplay implements WsMessageHandler {
 
     private String move(String... params) throws ResponseException {
         if (chessGame.getTeamTurn() != color){
-            throw new ResponseException(ResponseException.HttpCode.unauthorized, String.format("It's %s's turn, not yours", chessGame.getTeamTurn().toString().toLowerCase()));
+            throw new ResponseException(ResponseException.HttpCode.unauthorized,
+                    String.format("It's %s's turn, not yours", chessGame.getTeamTurn().toString().toLowerCase()));
         }
         ChessPosition start = positionParser(params[0]);
         ChessPosition end = positionParser(params[1]);

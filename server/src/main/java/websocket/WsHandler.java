@@ -140,17 +140,20 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
         String notification = String.format("%s moved %s", username, makeMoveCommand.getMove().toCommandString());
         moveNotification.setMessage(notification);
 
-        ServerMessage gameOver = null;
+        ServerMessage alert = null;
         if (game.isInStalemate(playerColor) || game.isInCheckmate(getOpponentColor(playerColor))) {
             game.endGame();
-            gameOver = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+            alert = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
             String gameOverMessage;
             if (game.isInStalemate(playerColor)) {
                 gameOverMessage = "Game Over: Stalemate";
             } else {
                 gameOverMessage = String.format("Game Over: Checkmate\n%s wins!", username);
             }
-            gameOver.setMessage(gameOverMessage);
+            alert.setMessage(gameOverMessage);
+        } else if (game.isInCheck(getOpponentColor(playerColor))) {
+            String checkMessage = String.format("%s is in check", getOpponentColor(playerColor).toString());
+            alert.setMessage(checkMessage);
         }
 
         GameData updatedGame = new GameData(gameData.gameID(), gameData.gameName(), game, gameData.whiteUsername(), gameData.blackUsername());
@@ -160,8 +163,8 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
 
         connections.broadcast(gameData.gameID(), session, moveNotification);
         connections.broadcast(gameData.gameID(), null, loadGameMessage);
-        if (gameOver != null){
-            connections.broadcast(gameData.gameID(), null, gameOver);
+        if (alert != null){
+            connections.broadcast(gameData.gameID(), null, alert);
         }
     }
 
@@ -193,7 +196,7 @@ public class WsHandler implements WsConnectHandler, WsMessageHandler, WsCloseHan
         connections.broadcast(gameData.gameID(), null, moveNotification);
     }
 
-    private ChessGame.TeamColor getPlayerColor(GameData gameData, String username ) throws IOException {
+    private ChessGame.TeamColor getPlayerColor(GameData gameData, String username ) {
         if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(username)){
             return ChessGame.TeamColor.WHITE;
         } else if (gameData.blackUsername() != null && gameData.blackUsername().equals(username)) {

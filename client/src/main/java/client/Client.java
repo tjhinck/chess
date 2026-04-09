@@ -114,7 +114,7 @@ public class Client{
     private String create(String... params) throws ResponseException {
         assertSignedIn();
         CreateGameRequest createGameRequest = new CreateGameRequest(params[0]);
-        CreateGameResponse createGameResponse = server.create(createGameRequest, authToken);
+        server.create(createGameRequest, authToken);
         ListGamesResponse listGamesResponse = server.list(authToken);
         games = new EnumeratedGameList(listGamesResponse.games());
         return "Created new game";
@@ -144,7 +144,8 @@ public class Client{
         }
         JoinGameRequest joinGameRequest = new JoinGameRequest(selectedGame.gameID(), color);
         server.join(joinGameRequest, authToken);
-        Gameplay gameplay = new Gameplay(serverURL, authToken, selectedGame.gameID(), selectedGame.gameName(), GameRole.PLAYER, color);
+        Gameplay gameplay = new Gameplay(serverURL, authToken, selectedGame.gameID(),
+                selectedGame.gameName(), GameRole.PLAYER, color);
         gameplay.run();
         return "";
     }
@@ -163,7 +164,8 @@ public class Client{
         } catch (IndexOutOfBoundsException ex) {
             return "Game " + gameNum + " not found";
         }
-        Gameplay gameplay = new Gameplay(serverURL, authToken, selectedGame.gameID(), selectedGame.gameName(), GameRole.OBSERVER, ChessGame.TeamColor.WHITE);
+        Gameplay gameplay = new Gameplay(serverURL, authToken, selectedGame.gameID(),
+                selectedGame.gameName(), GameRole.OBSERVER, ChessGame.TeamColor.WHITE);
         gameplay.run();
         return "";
     }
